@@ -3,6 +3,7 @@ import * as siteConfigService from "@/server/modules/site-config/service";
 import { SiteHeader } from "@/components/public/site-header";
 import { SiteFooter } from "@/components/public/site-footer";
 import { PixelScript } from "@/components/public/pixel-script";
+import { AiChatWidget } from "@/components/public/ai-chat-widget";
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const db = await connectDB();
@@ -14,6 +15,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <SiteHeader brandName={config.brandName} logoUrl={config.logoUrl} />
       {children}
       <SiteFooter brandName={config.brandName} logoUrl={config.logoUrl} location={config.location} whatsappNumber={config.whatsappNumber} />
+      {config.aiAgentEnabled && <AiChatWidget brandName={config.brandName} />}
     </div>
   );
 }
