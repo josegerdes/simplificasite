@@ -10,6 +10,11 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+# Variáveis NEXT_PUBLIC_* são embutidas no bundle do client NA HORA DO BUILD, não em
+# runtime — diferente das outras env vars do container, precisam chegar como build arg
+# (o `environment:` do docker-compose só existe depois que a imagem já foi construída).
+ARG NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY
+ENV NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY=${NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY}
 RUN npm run build
 
 FROM node:20-alpine AS runner

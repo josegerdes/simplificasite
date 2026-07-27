@@ -3,6 +3,7 @@ import { GraduationCap } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { formatBRL } from "@/lib/format";
+import { CountdownTimer } from "@/components/public/countdown-timer";
 
 export interface PublicCourseCardData {
   slug: string;
@@ -11,6 +12,7 @@ export interface PublicCourseCardData {
   coverImageUrl: string | null;
   price: number;
   originalPrice: number | null;
+  promoDeadline: string | null;
   seatsRemaining: number | null;
   soldOut: boolean;
   startDate: string | null;
@@ -49,7 +51,13 @@ export function CourseCard({ course }: { course: PublicCourseCardData }) {
       <div className="flex items-center justify-between px-4 py-3">
         <div>
           <p className="text-xs text-white/50">Matrícula por</p>
-          <p className="font-heading text-lg font-bold text-brand-teal">{formatBRL(course.price)}</p>
+          <div className="flex items-center gap-2">
+            {course.originalPrice && course.originalPrice > course.price && (
+              <span className="text-xs text-white/40 line-through">{formatBRL(course.originalPrice)}</span>
+            )}
+            <p className="font-heading text-lg font-bold text-brand-teal">{formatBRL(course.price)}</p>
+          </div>
+          {course.promoDeadline && <CountdownTimer deadline={course.promoDeadline} compact />}
         </div>
         <GraduationCap className="h-5 w-5 text-white/30" />
       </div>

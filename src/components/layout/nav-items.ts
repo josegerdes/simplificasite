@@ -6,7 +6,7 @@ import {
   GraduationCap,
   HelpCircle,
   LayoutDashboard,
-  Settings,
+  MessageSquareText,
   Shield,
   ShoppingBag,
   Users,
@@ -46,6 +46,12 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { title: "Configurações do site", url: "/site-config", icon: Globe, permission: "site-config.manage" },
       { title: "Vendedor IA", url: "/site-config/ai-agent", icon: Bot, permission: "site-config.manage" },
+      {
+        title: "Conversas do vendedor IA",
+        url: "/site-config/ai-agent/conversations",
+        icon: MessageSquareText,
+        permission: "site-config.manage",
+      },
     ],
   },
   {

@@ -18,6 +18,7 @@ import { formatBRL } from "@/lib/format";
 import { readUtmFromLocation } from "@/lib/utm";
 import { trackPixelEvent } from "@/components/public/pixel-script";
 import { PaymentBrick } from "@/components/public/payment-brick";
+import { CountdownTimer } from "@/components/public/countdown-timer";
 import type { PublicCourseCardData } from "@/components/public/course-card";
 
 const checkoutFormSchema = z.object({
@@ -130,6 +131,12 @@ export function CheckoutPanel({ course }: { course: PublicCourseCardData & { mod
           <p className="text-3xl font-bold text-brand-teal">{formatBRL(course.price)}</p>
           <p className="text-sm text-white/60">Valor da matrícula — o restante é combinado com nosso time</p>
         </div>
+
+        {course.promoDeadline && (
+          <div className="mb-4">
+            <CountdownTimer deadline={course.promoDeadline} />
+          </div>
+        )}
 
         <div className="mb-5 space-y-2 text-sm text-white/70">
           <p className="flex items-center gap-2">

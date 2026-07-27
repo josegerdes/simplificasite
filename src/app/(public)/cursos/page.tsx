@@ -1,12 +1,16 @@
 import { connectDB } from "@/server/db/client";
 import * as coursesService from "@/server/modules/courses/service";
 import { CatalogTabs } from "@/components/public/catalog-tabs";
+import { PastCoursesSection } from "@/components/public/past-courses-section";
 
 export const dynamic = "force-dynamic";
 
 export default async function CoursesCatalogPage() {
   const db = await connectDB();
-  const presencialCourses = await coursesService.listPublicCourses(db, "PRESENCIAL");
+  const [presencialCourses, pastCourses] = await Promise.all([
+    coursesService.listPublicCourses(db, "PRESENCIAL"),
+    coursesService.listPastCourses(db),
+  ]);
 
   return (
     <main className="py-12">
@@ -19,6 +23,8 @@ export default async function CoursesCatalogPage() {
           <CatalogTabs presencialCourses={presencialCourses} />
         </div>
       </div>
+
+      <PastCoursesSection courses={pastCourses} />
     </main>
   );
 }

@@ -23,6 +23,11 @@ export function findPublishedCourses(db: Db, modality?: CourseModality) {
     .toArray();
 }
 
+/** Turmas já realizadas — mostradas no site como prova social (sem CTA de compra). */
+export function findClosedCourses(db: Db) {
+  return collections.courses(db).find({ status: "CLOSED" }).sort({ updatedAt: -1 }).limit(12).toArray();
+}
+
 export function insertCourse(db: Db, course: CourseDoc) {
   return collections.courses(db).insertOne(course);
 }

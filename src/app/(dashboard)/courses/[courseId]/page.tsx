@@ -2,10 +2,22 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CheckCircle2, Circle, Download, Plus, Sparkles, Trash2 } from "lucide-react";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,11 +31,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { apiFetch } from "@/lib/api-client";
-import { ChecklistItem, CourseAdmin, EmentaState } from "@/app/(dashboard)/courses/types";
+import { apiFetch, ApiClientError } from "@/lib/api-client";
+import { ChecklistItem, CourseAdmin, CourseStatus, EmentaState } from "@/app/(dashboard)/courses/types";
+
+const STATUS_OPTIONS: { value: CourseStatus; label: string }[] = [
+  { value: "DRAFT", label: "Rascunho" },
+  { value: "PUBLISHED", label: "Publicado" },
+  { value: "SOLD_OUT", label: "Esgotado" },
+  { value: "CLOSED", label: "Encerrado (turma já aconteceu)" },
+];
 
 export default function CourseShowPage({ params }: { params: { courseId: string } }) {
   const { courseId } = params;
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const { data: course, isLoading } = useQuery<CourseAdmin>({
@@ -41,6 +61,22 @@ export default function CourseShowPage({ params }: { params: { courseId: string 
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const deleteCourse = useMutation({
+    mutationFn: () => apiFetch(`/api/courses/${courseId}`, { method: "DELETE" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      toast.success("Curso excluído");
+      router.push("/courses");
+    },
+    onError: (error: Error) => {
+      if (error instanceof ApiClientError && error.status === 409) {
+        toast.error("Este curso já tem matrículas — encerre-o (status \"Encerrado\") em vez de excluir");
+      } else {
+        toast.error(error.message);
+      }
+    },
+  });
+
   if (isLoading || !course) {
     return (
       <div className="space-y-4">
@@ -56,27 +92,55 @@ export default function CourseShowPage({ params }: { params: { courseId: string 
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-semibold tracking-tight">{course.name}</h1>
-            <Badge variant={course.status === "PUBLISHED" ? "success" : "outline"}>
-              {course.status === "DRAFT" ? "Rascunho" : course.status === "PUBLISHED" ? "Publicado" : course.status}
+            <Badge variant={course.status === "PUBLISHED" ? "success" : course.status === "SOLD_OUT" ? "warning" : "outline"}>
+              {STATUS_OPTIONS.find((s) => s.value === course.status)?.label ?? course.status}
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground">/{course.slug}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Label htmlFor="publish-switch" className="text-sm">
-            Publicado no site
-          </Label>
-          <Switch
-            id="publish-switch"
-            checked={course.status === "PUBLISHED" || course.status === "SOLD_OUT"}
-            onCheckedChange={(checked) => {
+        <div className="flex items-center gap-3">
+          <Select
+            value={course.status}
+            onValueChange={(value: CourseStatus) => {
               const pending = course.checklist.filter((item) => !item.done).length;
-              if (checked && pending > 0 && !confirm(`Ainda há ${pending} pendência(s) no checklist. Publicar mesmo assim?`)) {
+              if (value === "PUBLISHED" && pending > 0 && !confirm(`Ainda há ${pending} pendência(s) no checklist. Publicar mesmo assim?`)) {
                 return;
               }
-              updateCourse.mutate({ status: checked ? "PUBLISHED" : "DRAFT" });
+              updateCourse.mutate({ status: value });
             }}
-          />
+          >
+            <SelectTrigger className="w-56">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="icon" className="text-destructive hover:text-destructive">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Excluir &quot;{course.name}&quot;?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Essa ação não pode ser desfeita. Cursos com matrículas não podem ser excluídos — use o status
+                  &quot;Encerrado&quot; nesse caso.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={() => deleteCourse.mutate()}>Excluir</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 

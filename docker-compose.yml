@@ -13,6 +13,11 @@ services:
       context: .
       args:
         PORT: ${PORT:-3000}
+        # Precisa ser passado como build arg (não só em `environment:` abaixo) porque o
+        # Next.js embute variáveis NEXT_PUBLIC_* no bundle do client durante `npm run build`,
+        # que roda dentro da imagem — depois disso, mudar só a env var do container não
+        # tem mais efeito nenhum no valor já embutido no JS servido ao navegador.
+        NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY: ${NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY:-}
     restart: unless-stopped
     depends_on:
       - mongo

@@ -59,7 +59,7 @@ export function toAdminCourse(course: CourseDoc) {
     startDate: course.startDate,
     price: course.price,
     originalPrice: course.originalPrice,
-    promoDeadline: course.promoDeadline,
+    promoDeadline: course.promoDeadline ? course.promoDeadline.toISOString() : null,
     seatsLimit: course.seatsLimit,
     seatsSold: course.seatsSold,
     checklist: course.checklist,
@@ -91,11 +91,28 @@ export function toVisitorCourse(course: CourseDoc) {
     startDate: course.startDate,
     price: course.price,
     originalPrice: course.originalPrice,
-    promoDeadline: course.promoDeadline,
+    promoDeadline: course.promoDeadline ? course.promoDeadline.toISOString() : null,
     seatsRemaining,
     soldOut,
     ementaPublished: course.ementaPublished,
   };
+}
+
+export function toPastCourse(course: CourseDoc) {
+  return {
+    id: course._id.toHexString(),
+    slug: course.slug,
+    name: course.name,
+    modality: course.modality,
+    coverImageUrl: course.coverImageUrl,
+    startDate: course.startDate,
+    workloadHours: course.workloadHours,
+  };
+}
+
+export async function listPastCourses(db: Db) {
+  const courses = await coursesRepo.findClosedCourses(db);
+  return courses.map(toPastCourse);
 }
 
 export async function listCoursesAdmin(db: Db) {
