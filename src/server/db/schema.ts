@@ -63,8 +63,20 @@ export interface CourseDoc {
   seatsSold: number;
   pixelOverride: CoursePixelOverride;
   ementaPublished: boolean;
+  /** Checklist de preparação (pegar conteúdo com o professor, criar artes, etc) — guia o admin
+   *  antes de publicar; não bloqueia a publicação, só mostra o que falta. */
+  checklist: CourseChecklistItem[];
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface CourseChecklistItem {
+  id: string;
+  label: string;
+  done: boolean;
+  /** true nos itens padrão criados junto com o curso — os customizados (adicionados pelo admin
+   *  depois) têm `false` aqui, só pra diferenciar na UI se algum dia for útil. */
+  isDefault: boolean;
 }
 
 export interface EmentaModule {
@@ -91,6 +103,17 @@ export interface ContactNote {
   createdAt: Date;
 }
 
+/** Endereço + documentos coletados no checkout — mesmos campos que o Sistema do Aluno
+ *  usa pra cadastrar o `StudentDoc` e emitir contrato, pra o vendedor só precisar
+ *  finalizar o cadastro lá (assinatura/turma) em vez de correr atrás de dado básico. */
+export interface EnrollmentAddress {
+  postalCode: string | null;
+  street: string | null;
+  neighborhood: string | null;
+  city: string | null;
+  state: string | null;
+}
+
 export interface EnrollmentDoc {
   _id: ObjectId;
   courseId: ObjectId;
@@ -98,6 +121,11 @@ export interface EnrollmentDoc {
   studentEmail: string;
   studentPhone: string;
   studentCpf: string;
+  /** RG (ou outro documento de identidade) — igual ao `alternativeDoc` do Sistema do Aluno. */
+  studentRg: string | null;
+  studentBornDate: string | null;
+  studentCivilState: string | null;
+  address: EnrollmentAddress;
   amount: number;
   paymentProvider: "mercadopago";
   paymentStatus: PaymentStatus;
