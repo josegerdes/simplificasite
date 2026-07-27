@@ -1,0 +1,58 @@
+import Link from "next/link";
+import { GraduationCap } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { formatBRL } from "@/lib/format";
+
+export interface PublicCourseCardData {
+  slug: string;
+  name: string;
+  shortDescription: string;
+  coverImageUrl: string | null;
+  price: number;
+  originalPrice: number | null;
+  seatsRemaining: number | null;
+  soldOut: boolean;
+  startDate: string | null;
+}
+
+export function CourseCard({ course }: { course: PublicCourseCardData }) {
+  const lowSeats = course.seatsRemaining !== null && course.seatsRemaining > 0 && course.seatsRemaining <= 10;
+
+  return (
+    <Link
+      href={`/cursos/${course.slug}`}
+      className="group relative flex w-64 shrink-0 flex-col overflow-hidden rounded-xl bg-brand-ink shadow-lg ring-1 ring-white/10 transition-transform hover:-translate-y-1 hover:ring-brand-teal/60 md:w-72"
+    >
+      <div className="relative aspect-[4/5] w-full overflow-hidden bg-gradient-to-br from-brand-teal to-brand-tealDark">
+        {course.coverImageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={course.coverImageUrl}
+            alt={course.name}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+
+        <div className="absolute left-3 top-3 flex flex-col gap-1.5">
+          {course.soldOut && <Badge variant="destructive">Esgotado</Badge>}
+          {!course.soldOut && lowSeats && <Badge variant="warning">Últimas vagas</Badge>}
+        </div>
+
+        <div className="absolute inset-x-0 bottom-0 p-4">
+          <h3 className="font-heading text-base font-semibold leading-tight text-white">{course.name}</h3>
+          {course.startDate && <p className="mt-1 text-xs text-white/70">{course.startDate}</p>}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between px-4 py-3">
+        <div>
+          <p className="text-xs text-white/50">Matrícula por</p>
+          <p className="font-heading text-lg font-bold text-brand-teal">{formatBRL(course.price)}</p>
+        </div>
+        <GraduationCap className="h-5 w-5 text-white/30" />
+      </div>
+    </Link>
+  );
+}

@@ -155,6 +155,9 @@ export interface SellerDoc {
   email: string;
   phone: string | null;
   active: boolean;
+  /** Usado pro round-robin de atribuição de matrículas — sempre pega o vendedor ativo há
+   *  mais tempo sem receber uma (null = nunca recebeu, prioridade máxima). */
+  lastAssignedAt: Date | null;
   createdAt: Date;
 }
 
