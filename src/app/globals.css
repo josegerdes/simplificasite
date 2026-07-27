@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 200 20% 14%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 200 20% 14%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 200 20% 14%;
+
+    /* Teal da marca Simplifica Doctor */
+    --primary: 176 58% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 176 25% 95%;
+    --secondary-foreground: 200 20% 14%;
+
+    --muted: 176 15% 95%;
+    --muted-foreground: 200 10% 45%;
+
+    --accent: 176 25% 95%;
+    --accent-foreground: 200 20% 14%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 35%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 32 95% 50%;
+    --warning-foreground: 0 0% 10%;
+
+    --border: 176 15% 89%;
+    --input: 176 15% 89%;
+    --ring: 176 58% 40%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 200 28% 10%;
+    --sidebar-foreground: 176 15% 88%;
+    --sidebar-primary: 176 58% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 200 24% 16%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 200 24% 16%;
+    --sidebar-ring: 176 58% 45%;
+
+    --chart-1: 176 58% 45%;
+    --chart-2: 14 90% 60%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 260 60% 62%;
+    --chart-5: 0 72% 51%;
+
+    /* Cores da marca — uso direto no site público (fora do sistema semântico do shadcn) */
+    --brand-teal: 176 58% 45%;
+    --brand-teal-dark: 178 62% 28%;
+    --brand-coral: 14 90% 60%;
+    --brand-ink: 200 28% 14%;
+  }
+
+  .dark {
+    --background: 200 28% 7%;
+    --foreground: 176 15% 92%;
+
+    --card: 200 26% 10%;
+    --card-foreground: 176 15% 92%;
+
+    --popover: 200 26% 10%;
+    --popover-foreground: 176 15% 92%;
+
+    --primary: 176 55% 50%;
+    --primary-foreground: 200 28% 8%;
+
+    --secondary: 200 22% 15%;
+    --secondary-foreground: 176 15% 92%;
+
+    --muted: 200 22% 15%;
+    --muted-foreground: 176 10% 65%;
+
+    --accent: 200 22% 15%;
+    --accent-foreground: 176 15% 92%;
+
+    --destructive: 0 63% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 60% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 32 85% 55%;
+    --warning-foreground: 0 0% 10%;
+
+    --border: 200 20% 18%;
+    --input: 200 20% 18%;
+    --ring: 176 55% 50%;
+
+    --sidebar-background: 200 30% 6%;
+    --sidebar-foreground: 176 15% 88%;
+    --sidebar-primary: 176 55% 50%;
+    --sidebar-primary-foreground: 200 28% 8%;
+    --sidebar-accent: 200 22% 13%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 200 22% 13%;
+    --sidebar-ring: 176 55% 50%;
+
+    --chart-1: 176 55% 50%;
+    --chart-2: 14 90% 62%;
+    --chart-3: 38 85% 55%;
+    --chart-4: 260 60% 68%;
+    --chart-5: 0 63% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

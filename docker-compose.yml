@@ -1,0 +1,36 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?defina MONGO_ROOT_PASSWORD no .env}
+
+  app:
+    build:
+      context: .
+      args:
+        PORT: ${PORT:-3000}
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    environment:
+      PORT: ${PORT:-3000}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+      DATABASE_URL: mongodb://${MONGO_ROOT_USER:-root}:${MONGO_ROOT_PASSWORD}@mongo:27017/?authSource=admin
+      DB: ${DB:-simplifica_doctor_vendas}
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env}
+      APP_SECRET: ${APP_SECRET:?defina APP_SECRET no .env}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@simplificadoctor.com}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      MERCADOPAGO_ACCESS_TOKEN: ${MERCADOPAGO_ACCESS_TOKEN:-}
+      NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY: ${NEXT_PUBLIC_MERCADOPAGO_PUBLIC_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      FACEBOOK_CONVERSIONS_ACCESS_TOKEN: ${FACEBOOK_CONVERSIONS_ACCESS_TOKEN:-}
+
+volumes:
+  mongo-data:
