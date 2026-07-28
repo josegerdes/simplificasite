@@ -5,6 +5,13 @@ import { SiteFooter } from "@/components/public/site-footer";
 import { PixelScript } from "@/components/public/pixel-script";
 import { AiChatWidget } from "@/components/public/ai-chat-widget";
 
+// Todo o grupo (public) depende do banco (site-config) já no layout — força dynamic
+// pra NENHUMA página filha ser pré-renderizada em build time, onde DATABASE_URL não
+// existe de propósito (Docker builda a imagem antes das env vars de runtime existirem).
+// Sem isso, basta uma página nova esquecer o próprio `export const dynamic` pra
+// quebrar o build inteiro (foi exatamente o que aconteceu com /matricula/sucesso).
+export const dynamic = "force-dynamic";
+
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const db = await connectDB();
   const config = await siteConfigService.getPublicSiteConfig(db);
