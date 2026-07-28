@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, MessageCircle } from "lucide-react";
+import { Facebook, Instagram, MapPin, MessageCircle } from "lucide-react";
 
 export interface SiteFooterLocation {
   id: string;
@@ -7,15 +7,24 @@ export interface SiteFooterLocation {
   address: string;
 }
 
+export interface SiteFooterSocialLinks {
+  instagram: string | null;
+  facebook: string | null;
+  tiktok: string | null;
+  youtube: string | null;
+}
+
 export function SiteFooter({
   brandName,
   logoUrl,
   locations,
+  socialLinks,
   whatsappNumber,
 }: {
   brandName: string;
   logoUrl: string;
   locations: SiteFooterLocation[];
+  socialLinks: SiteFooterSocialLinks;
   whatsappNumber: string | null;
 }) {
   return (
@@ -25,6 +34,20 @@ export function SiteFooter({
           {/* Sem filtro de cor — mantém a identidade visual (teal) original da logo. */}
           <img src={logoUrl} alt={brandName} className="mb-3 h-9 w-auto" />
           <p className="text-sm">Formação de qualidade para transformar carreiras na Odontologia.</p>
+          {(socialLinks.instagram || socialLinks.facebook) && (
+            <div className="mt-4 flex items-center gap-3">
+              {socialLinks.instagram && (
+                <Link href={socialLinks.instagram} target="_blank" aria-label="Instagram" className="hover:text-white">
+                  <Instagram className="h-5 w-5" />
+                </Link>
+              )}
+              {socialLinks.facebook && (
+                <Link href={socialLinks.facebook} target="_blank" aria-label="Facebook" className="hover:text-white">
+                  <Facebook className="h-5 w-5" />
+                </Link>
+              )}
+            </div>
+          )}
         </div>
         <div className="space-y-2 text-sm">
           <p className="font-semibold text-white">Nossas unidades</p>

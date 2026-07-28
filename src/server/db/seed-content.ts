@@ -261,9 +261,20 @@ export async function seedSiteContent(db: Db): Promise<void> {
         pillars: PILLARS,
         testimonials: TESTIMONIALS.map((t) => ({ id: randomUUID(), ...t })),
         locations: [
-          { id: randomUUID(), name: "Unidade Rio de Janeiro", address: "Botafogo - Rua Oliveira Fausto, 35" },
-          { id: randomUUID(), name: "Unidade Minas Gerais", address: "Rua João Basílio" },
+          {
+            id: randomUUID(),
+            name: "Unidade Rio de Janeiro",
+            address: "Botafogo - Rua Oliveira Fausto, 35",
+            imageUrl: "/images/site/unidade-botafogo.jpg",
+          },
+          { id: randomUUID(), name: "Unidade Minas Gerais", address: "Rua João Basílio", imageUrl: null },
         ],
+        socialLinks: {
+          instagram: "https://www.instagram.com/simplificadoctor/",
+          facebook: "https://www.facebook.com/profile.php?id=100088237646673",
+          tiktok: null,
+          youtube: null,
+        },
         updatedAt: now,
       },
       $setOnInsert: {
@@ -271,7 +282,7 @@ export async function seedSiteContent(db: Db): Promise<void> {
         singleton: true,
         brandName: "Simplifica Doctor",
         logoUrl: "/logo.png",
-        heroImageUrl: "/images/banners/pratica-implanto.webp",
+        heroImageUrl: "/images/site/hero-equipe.jpg",
         whatsappNumber: null,
         pixel: {
           pixelId: null,

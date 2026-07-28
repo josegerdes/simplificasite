@@ -14,6 +14,7 @@ export function toAdminSiteConfig(config: SiteConfigDoc) {
     pillars: config.pillars,
     testimonials: config.testimonials,
     locations: config.locations,
+    socialLinks: config.socialLinks,
     whatsappNumber: config.whatsappNumber,
     pixel: config.pixel,
     aiAgent: config.aiAgent,
@@ -33,6 +34,7 @@ export function toPublicSiteConfig(config: SiteConfigDoc) {
     pillars: config.pillars,
     testimonials: config.testimonials,
     locations: config.locations,
+    socialLinks: config.socialLinks,
     whatsappNumber: config.whatsappNumber,
     pixel: config.pixel.enabled
       ? { pixelId: config.pixel.pixelId, testEventCode: config.pixel.testEventCode, events: config.pixel.events }

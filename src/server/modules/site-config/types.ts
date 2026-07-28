@@ -35,6 +35,14 @@ const locationSchema = z.object({
   id: z.string(),
   name: z.string().min(1),
   address: z.string().min(1),
+  imageUrl: z.string().nullable().default(null),
+});
+
+const socialLinksSchema = z.object({
+  instagram: z.string().nullable(),
+  facebook: z.string().nullable(),
+  tiktok: z.string().nullable(),
+  youtube: z.string().nullable(),
 });
 
 export const updateSiteConfigSchema = z.object({
@@ -46,6 +54,7 @@ export const updateSiteConfigSchema = z.object({
   pillars: z.array(z.object({ title: z.string().min(1), description: z.string().min(1) })).optional(),
   testimonials: z.array(testimonialSchema).optional(),
   locations: z.array(locationSchema).optional(),
+  socialLinks: socialLinksSchema.partial().optional(),
   whatsappNumber: z.string().nullable().optional(),
   pixel: pixelSchema.partial().optional(),
   aiAgent: aiAgentSchema.partial().optional(),

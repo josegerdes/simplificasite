@@ -7,15 +7,26 @@ const DEFAULT_CONFIG: Omit<SiteConfigDoc, "_id"> = {
   singleton: true,
   brandName: "Simplifica Doctor",
   logoUrl: "/logo.png",
-  heroImageUrl: "/images/banners/pratica-implanto.webp",
+  heroImageUrl: "/images/site/hero-equipe.jpg",
   heroTitle: "Comece agora a formação que vai fazer a diferença na sua carreira",
   heroSubtitle:
     "Formamos profissionais odontológicos capacitados e atualizados, com cursos acessíveis e práticos que elevam o padrão da odontologia no Brasil.",
   pillars: [],
   testimonials: [],
   locations: [
-    { id: "rio-de-janeiro", name: "Unidade Rio de Janeiro", address: "Botafogo - Rua Oliveira Fausto, 35" },
+    {
+      id: "rio-de-janeiro",
+      name: "Unidade Rio de Janeiro",
+      address: "Botafogo - Rua Oliveira Fausto, 35",
+      imageUrl: "/images/site/unidade-botafogo.jpg",
+    },
   ],
+  socialLinks: {
+    instagram: "https://www.instagram.com/simplificadoctor/",
+    facebook: "https://www.facebook.com/profile.php?id=100088237646673",
+    tiktok: null,
+    youtube: null,
+  },
   whatsappNumber: null,
   pixel: {
     pixelId: null,

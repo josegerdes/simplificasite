@@ -231,6 +231,14 @@ export interface SiteConfigLocation {
   id: string;
   name: string;
   address: string;
+  imageUrl: string | null;
+}
+
+export interface SiteConfigSocialLinks {
+  instagram: string | null;
+  facebook: string | null;
+  tiktok: string | null;
+  youtube: string | null;
 }
 
 export interface SiteConfigDoc {
@@ -244,6 +252,7 @@ export interface SiteConfigDoc {
   heroSubtitle: string;
   pillars: { title: string; description: string }[];
   testimonials: Testimonial[];
+  socialLinks: SiteConfigSocialLinks;
   /** Mais de uma unidade (ex: Rio + Minas) — cada uma vira um mini-mapa embutido no site. */
   locations: SiteConfigLocation[];
   whatsappNumber: string | null;

@@ -120,6 +120,13 @@ export default async function HomePage() {
               <div key={location.id} className="space-y-2">
                 <p className="font-heading text-sm font-semibold text-white">{location.name}</p>
                 <p className="text-sm text-white/80">{location.address}</p>
+                {location.imageUrl && (
+                  <img
+                    src={location.imageUrl}
+                    alt={location.name}
+                    className="h-40 w-full rounded-xl border border-white/10 object-cover"
+                  />
+                )}
                 <LocationMap name={location.name} address={location.address} />
               </div>
             ))}

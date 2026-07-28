@@ -88,10 +88,37 @@ export default function SiteConfigPage() {
                   onChange={(e) => setForm({ ...form, whatsappNumber: e.target.value })}
                 />
               </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label>Instagram (link completo)</Label>
+                  <Input
+                    placeholder="https://www.instagram.com/simplificadoctor/"
+                    value={form.socialLinks.instagram ?? ""}
+                    onChange={(e) =>
+                      setForm({ ...form, socialLinks: { ...form.socialLinks, instagram: e.target.value || null } })
+                    }
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Facebook (link completo)</Label>
+                  <Input
+                    placeholder="https://www.facebook.com/..."
+                    value={form.socialLinks.facebook ?? ""}
+                    onChange={(e) =>
+                      setForm({ ...form, socialLinks: { ...form.socialLinks, facebook: e.target.value || null } })
+                    }
+                  />
+                </div>
+              </div>
               <div className="flex justify-end">
                 <Button
                   onClick={() =>
-                    save.mutate({ brandName: form.brandName, logoUrl: form.logoUrl, whatsappNumber: form.whatsappNumber })
+                    save.mutate({
+                      brandName: form.brandName,
+                      logoUrl: form.logoUrl,
+                      whatsappNumber: form.whatsappNumber,
+                      socialLinks: form.socialLinks,
+                    })
                   }
                   loading={save.isPending}
                 >
@@ -148,7 +175,7 @@ export default function SiteConfigPage() {
                   onClick={() =>
                     setForm({
                       ...form,
-                      locations: [...form.locations, { id: randomId(), name: "", address: "" }],
+                      locations: [...form.locations, { id: randomId(), name: "", address: "", imageUrl: null }],
                     })
                   }
                 >
@@ -178,6 +205,17 @@ export default function SiteConfigPage() {
                           setForm({ ...form, locations });
                         }}
                       />
+                      <div className="max-w-xs">
+                        <ImageUploadField
+                          value={location.imageUrl ?? ""}
+                          onChange={(url) => {
+                            const locations = [...form.locations];
+                            locations[index] = { ...location, imageUrl: url || null };
+                            setForm({ ...form, locations });
+                          }}
+                          aspectClassName="aspect-video"
+                        />
+                      </div>
                     </div>
                     <Button
                       size="icon"

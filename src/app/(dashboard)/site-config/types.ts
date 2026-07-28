@@ -9,6 +9,14 @@ export interface SiteConfigLocation {
   id: string;
   name: string;
   address: string;
+  imageUrl: string | null;
+}
+
+export interface SiteConfigSocialLinks {
+  instagram: string | null;
+  facebook: string | null;
+  tiktok: string | null;
+  youtube: string | null;
 }
 
 export interface SiteConfigAdmin {
@@ -20,6 +28,7 @@ export interface SiteConfigAdmin {
   pillars: { title: string; description: string }[];
   testimonials: Testimonial[];
   locations: SiteConfigLocation[];
+  socialLinks: SiteConfigSocialLinks;
   whatsappNumber: string | null;
   pixel: {
     pixelId: string | null;

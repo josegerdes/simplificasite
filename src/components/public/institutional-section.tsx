@@ -11,6 +11,7 @@ export interface InstitutionalLocation {
   id: string;
   name: string;
   address: string;
+  imageUrl: string | null;
 }
 
 /**
@@ -60,6 +61,13 @@ export function InstitutionalSection({
                 <p className="text-sm text-white/80">
                   <span className="font-semibold text-white">{location.name}:</span> {location.address}
                 </p>
+                {location.imageUrl && (
+                  <img
+                    src={location.imageUrl}
+                    alt={location.name}
+                    className="h-32 w-full rounded-lg border border-white/10 object-cover"
+                  />
+                )}
                 <LocationMap name={location.name} address={location.address} />
               </div>
             ))}
