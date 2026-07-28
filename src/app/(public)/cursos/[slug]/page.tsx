@@ -5,10 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { connectDB } from "@/server/db/client";
 import * as coursesService from "@/server/modules/courses/service";
 import * as ementaService from "@/server/modules/ementa/service";
+import * as siteConfigService from "@/server/modules/site-config/service";
 import { ApiError } from "@/server/auth/guards";
 import { CheckoutPanel } from "@/components/public/checkout-panel";
 import { ViewContentTracker } from "@/components/public/view-content-tracker";
 import { EmentaSection } from "@/components/public/ementa-section";
+import { InstitutionalSection } from "@/components/public/institutional-section";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +23,10 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
   }
-  const ementaModules = await ementaService.getPublishedEmentaModules(db, course.id, course.ementaPublished);
+  const [ementaModules, siteConfig] = await Promise.all([
+    ementaService.getPublishedEmentaModules(db, course.id, course.ementaPublished),
+    siteConfigService.getPublicSiteConfig(db),
+  ]);
 
   return (
     <main>
@@ -41,7 +46,7 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
         </div>
       </section>
 
-      <section className="container grid grid-cols-1 gap-10 pb-20 lg:grid-cols-[1fr_380px]">
+      <section className="container grid grid-cols-1 gap-10 pb-28 lg:grid-cols-[1fr_380px] lg:pb-20">
         <div className="space-y-10">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <InfoStat icon={<Clock className="h-5 w-5" />} label="Carga horária" value={`${course.workloadHours}h`} />
@@ -83,6 +88,8 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
           )}
 
           <EmentaSection modules={ementaModules} courseSlug={course.slug} price={course.price} />
+
+          <InstitutionalSection brandName={siteConfig.brandName} pillars={siteConfig.pillars} locations={siteConfig.locations} />
         </div>
 
         <div id="matricula">

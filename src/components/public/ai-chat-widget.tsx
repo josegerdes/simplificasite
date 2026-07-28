@@ -78,7 +78,9 @@ export function AiChatWidget({ brandName }: { brandName: string }) {
   }
 
   return (
-    <div className="fixed bottom-5 right-5 z-50">
+    // bottom-24 no mobile pra não ficar em cima da barra fixa de preço/CTA do checkout
+    // (ver checkout-panel.tsx) — no desktop essa barra não existe, então volta pro canto normal.
+    <div className="fixed bottom-24 right-4 z-50 lg:bottom-5 lg:right-5">
       {open && (
         <div className="mb-3 flex h-[480px] w-80 flex-col overflow-hidden rounded-xl border border-white/10 bg-brand-ink shadow-2xl sm:w-96">
           <div className="flex items-center justify-between bg-brand-teal px-4 py-3 text-white">

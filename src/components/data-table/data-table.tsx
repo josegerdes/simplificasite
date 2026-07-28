@@ -44,7 +44,7 @@ export function DataTable<TData>({
   const totalPages = pagination ? Math.max(1, Math.ceil(pagination.total / pagination.pageSize)) : 1;
 
   return (
-    <div className="rounded-lg border bg-card">
+    <div className="overflow-x-auto rounded-lg border bg-card">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (

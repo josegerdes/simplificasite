@@ -21,7 +21,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <PixelScript pixel={config.pixel} />
       <SiteHeader brandName={config.brandName} logoUrl={config.logoUrl} />
       {children}
-      <SiteFooter brandName={config.brandName} logoUrl={config.logoUrl} location={config.location} whatsappNumber={config.whatsappNumber} />
+      <SiteFooter brandName={config.brandName} logoUrl={config.logoUrl} locations={config.locations} whatsappNumber={config.whatsappNumber} />
       {config.aiAgentEnabled && <AiChatWidget brandName={config.brandName} />}
     </div>
   );

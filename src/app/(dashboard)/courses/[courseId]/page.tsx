@@ -32,6 +32,8 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch, ApiClientError } from "@/lib/api-client";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
+import { AiFieldButton } from "@/components/admin/ai-field-button";
 import { ChecklistItem, CourseAdmin, CourseStatus, EmentaState } from "@/app/(dashboard)/courses/types";
 
 const STATUS_OPTIONS: { value: CourseStatus; label: string }[] = [
@@ -305,11 +307,25 @@ function CourseDetailsForm({
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label>Descrição curta (aparece nos cards)</Label>
+          <div className="flex items-center justify-between">
+            <Label>Descrição curta (aparece nos cards)</Label>
+            <AiFieldButton
+              courseId={course.id}
+              field="shortDescription"
+              onResult={(value) => setForm({ ...form, shortDescription: String(value) })}
+            />
+          </div>
           <Textarea rows={2} value={form.shortDescription} onChange={(e) => setForm({ ...form, shortDescription: e.target.value })} />
         </div>
         <div className="space-y-1.5">
-          <Label>Descrição completa (aparece na página do curso)</Label>
+          <div className="flex items-center justify-between">
+            <Label>Descrição completa (aparece na página do curso)</Label>
+            <AiFieldButton
+              courseId={course.id}
+              field="longDescription"
+              onResult={(value) => setForm({ ...form, longDescription: String(value) })}
+            />
+          </div>
           <Textarea rows={5} value={form.longDescription} onChange={(e) => setForm({ ...form, longDescription: e.target.value })} />
         </div>
         <div className="grid grid-cols-3 gap-4">
@@ -331,11 +347,21 @@ function CourseDetailsForm({
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label>Imagem de capa (URL)</Label>
-          <Input value={form.coverImageUrl ?? ""} onChange={(e) => setForm({ ...form, coverImageUrl: e.target.value })} />
+          <Label>Imagem de capa</Label>
+          <p className="text-xs text-muted-foreground">
+            Tamanho ideal: 1200×800px (proporção 3:2) — aparece nos cards do site e no topo da página do curso.
+          </p>
+          <ImageUploadField value={form.coverImageUrl} onChange={(url) => setForm({ ...form, coverImageUrl: url })} aspectClassName="aspect-[3/2]" />
         </div>
         <div className="space-y-1.5">
-          <Label>Destaques (um por linha)</Label>
+          <div className="flex items-center justify-between">
+            <Label>Destaques (um por linha)</Label>
+            <AiFieldButton
+              courseId={course.id}
+              field="highlights"
+              onResult={(value) => setForm({ ...form, highlights: Array.isArray(value) ? value : [String(value)] })}
+            />
+          </div>
           <Textarea
             rows={4}
             value={form.highlights.join("\n")}

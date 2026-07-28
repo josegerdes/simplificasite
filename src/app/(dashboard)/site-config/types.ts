@@ -5,14 +5,21 @@ export interface Testimonial {
   quote: string;
 }
 
+export interface SiteConfigLocation {
+  id: string;
+  name: string;
+  address: string;
+}
+
 export interface SiteConfigAdmin {
   brandName: string;
   logoUrl: string;
+  heroImageUrl: string;
   heroTitle: string;
   heroSubtitle: string;
   pillars: { title: string; description: string }[];
   testimonials: Testimonial[];
-  location: string;
+  locations: SiteConfigLocation[];
   whatsappNumber: string | null;
   pixel: {
     pixelId: string | null;

@@ -51,3 +51,16 @@ export async function seedInitialAdmin(db: Db): Promise<void> {
   console.log(`[seed] Usuário administrador criado: ${email} / ${password}`);
   console.log("[seed] Troque a senha assim que possível.");
 }
+
+/**
+ * `seedInitialAdmin` só roda uma vez (idempotente por "já existe usuário") — então toda
+ * permissão nova adicionada ao catálogo DEPOIS do primeiro boot nunca chegava sozinha na
+ * role Administrador já existente no banco (ela guarda uma cópia da lista, não uma
+ * referência). Roda em TODO boot, `$addToSet` (nunca remove nada, só garante que a role
+ * padrão sempre tem todas as permissões que o código atual conhece).
+ */
+export async function syncDefaultRolePermissions(db: Db): Promise<void> {
+  await collections
+    .roles(db)
+    .updateMany({ isDefault: true }, { $addToSet: { permissions: { $each: ALL_PERMISSIONS } } });
+}

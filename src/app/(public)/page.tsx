@@ -9,6 +9,7 @@ import { CourseRow } from "@/components/public/course-row";
 import { CourseCard } from "@/components/public/course-card";
 import { OnlineTeaserRow } from "@/components/public/online-teaser-row";
 import { TestimonialsCarousel } from "@/components/public/testimonials-carousel";
+import { LocationMap } from "@/components/public/location-map";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +23,7 @@ export default async function HomePage() {
   return (
     <main>
       <section className="relative flex min-h-[85vh] items-center overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url(/images/banners/pratica-implanto.webp)" }}
-        />
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${config.heroImageUrl})` }} />
         <div className="absolute inset-0 bg-gradient-to-t from-brand-ink via-brand-ink/85 to-brand-ink/50" />
         <div className="absolute inset-0 bg-gradient-to-r from-brand-ink via-brand-ink/40 to-transparent" />
 
@@ -96,13 +94,25 @@ export default async function HomePage() {
       </section>
 
       <section className="bg-gradient-to-br from-brand-teal to-brand-tealDark py-16">
-        <div className="container flex flex-col items-center gap-6 text-center">
-          <MapPin className="h-8 w-8 text-white" />
-          <h2 className="font-heading text-2xl font-bold text-white md:text-3xl">Onde estamos</h2>
-          <p className="text-white/90">{config.location}</p>
-          <Button asChild size="lg" variant="secondary">
-            <Link href="/cursos">Quero garantir minha vaga</Link>
-          </Button>
+        <div className="container">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <MapPin className="h-8 w-8 text-white" />
+            <h2 className="font-heading text-2xl font-bold text-white md:text-3xl">Onde estamos</h2>
+          </div>
+          <div className="mx-auto mt-8 grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-2">
+            {config.locations.map((location) => (
+              <div key={location.id} className="space-y-2">
+                <p className="font-heading text-sm font-semibold text-white">{location.name}</p>
+                <p className="text-sm text-white/80">{location.address}</p>
+                <LocationMap name={location.name} address={location.address} />
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 flex justify-center">
+            <Button asChild size="lg" variant="secondary">
+              <Link href="/cursos">Quero garantir minha vaga</Link>
+            </Button>
+          </div>
         </div>
       </section>
     </main>

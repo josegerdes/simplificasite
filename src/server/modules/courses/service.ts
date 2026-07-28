@@ -5,6 +5,7 @@ import { Db, ObjectId } from "mongodb";
 import { CourseChecklistItem, CourseDoc, CourseModality } from "@/server/db/schema";
 import { ApiError } from "@/server/auth/guards";
 import * as coursesRepo from "@/server/modules/courses/repository";
+import * as ementaService from "@/server/modules/ementa/service";
 import { CreateCourseInput, UpdateCourseInput } from "@/server/modules/courses/types";
 
 /** Passos típicos entre "decidimos abrir esse curso" e "curso pronto pra ir ao ar" — guia o
@@ -161,12 +162,16 @@ export async function createCourse(db: Db, input: CreateCourseInput) {
     seatsLimit: input.seatsLimit,
     seatsSold: 0,
     pixelOverride: { enabled: false, pixelId: null },
-    ementaPublished: false,
+    ementaPublished: true,
     checklist: createDefaultChecklist(),
     createdAt: now,
     updatedAt: now,
   };
   await coursesRepo.insertCourse(db, course);
+  // A ementa nunca fica vazia nem escondida — todo curso já nasce com uma (IA se configurada,
+  // senão um rascunho a partir dos destaques) e já publicada, pro visitante sempre ver a
+  // seção/PDF de ementa. O admin edita/regenera à vontade depois, sem precisar "ativar" nada.
+  await ementaService.ensureEmentaExists(db, course);
   return toAdminCourse(course);
 }
 

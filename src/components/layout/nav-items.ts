@@ -5,6 +5,7 @@ import {
   Globe,
   GraduationCap,
   HelpCircle,
+  Inbox,
   LayoutDashboard,
   MessageSquareText,
   Shield,
@@ -39,6 +40,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { title: "Matrículas", url: "/enrollments", icon: GraduationCap, permission: "sales.view" },
       { title: "Vendedores", url: "/sellers", icon: ShoppingBag, permission: "people.manage" },
+      { title: "Mensagens de contato", url: "/contact-messages", icon: Inbox, permission: "contact.manage" },
     ],
   },
   {

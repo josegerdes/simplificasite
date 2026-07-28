@@ -182,7 +182,10 @@ export function CheckoutPanel({ course }: { course: PublicCourseCardData & { mod
 
   return (
     <>
-      <div className="sticky top-24 rounded-xl border border-white/10 bg-white/5 p-6">
+      {/* Desktop: card fixo na coluna lateral. No mobile essa coluna vira a última coisa da
+          página (grid empilhado) — sem a barra fixa abaixo, o CTA ficaria fora da tela até o
+          visitante rolar tudo, o que mata conversão em tráfego de anúncio (majoritariamente mobile). */}
+      <div className="sticky top-24 hidden rounded-xl border border-white/10 bg-white/5 p-6 lg:block">
         <div className="mb-4">
           {course.originalPrice && course.originalPrice > course.price && (
             <p className="text-sm text-white/40 line-through">{formatBRL(course.originalPrice)}</p>
@@ -215,6 +218,22 @@ export function CheckoutPanel({ course }: { course: PublicCourseCardData & { mod
         <Button size="xl" variant="cta" className="w-full" disabled={course.soldOut} onClick={openCheckout}>
           {course.soldOut ? "Vagas esgotadas" : "Garantir minha vaga"}
         </Button>
+      </div>
+
+      {/* Mobile: barra fixa no rodapé, sempre visível — o equivalente ao card acima, mas sem
+          depender de scroll pra aparecer. */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-brand-ink/95 p-3 backdrop-blur lg:hidden">
+        <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            {course.originalPrice && course.originalPrice > course.price && (
+              <p className="truncate text-xs text-white/40 line-through">{formatBRL(course.originalPrice)}</p>
+            )}
+            <p className="font-heading text-xl font-bold text-brand-teal">{formatBRL(course.price)}</p>
+          </div>
+          <Button size="lg" variant="cta" className="shrink-0" disabled={course.soldOut} onClick={openCheckout}>
+            {course.soldOut ? "Esgotado" : "Garantir vaga"}
+          </Button>
+        </div>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -358,7 +377,7 @@ export function CheckoutPanel({ course }: { course: PublicCourseCardData & { mod
                     </FormItem>
                   )}
                 />
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                   <FormField
                     control={form.control}
                     name="postalCode"

@@ -31,14 +31,21 @@ const testimonialSchema = z.object({
   quote: z.string().min(1),
 });
 
+const locationSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1),
+  address: z.string().min(1),
+});
+
 export const updateSiteConfigSchema = z.object({
   brandName: z.string().min(1).optional(),
   logoUrl: z.string().min(1).optional(),
+  heroImageUrl: z.string().min(1).optional(),
   heroTitle: z.string().min(1).optional(),
   heroSubtitle: z.string().min(1).optional(),
   pillars: z.array(z.object({ title: z.string().min(1), description: z.string().min(1) })).optional(),
   testimonials: z.array(testimonialSchema).optional(),
-  location: z.string().optional(),
+  locations: z.array(locationSchema).optional(),
   whatsappNumber: z.string().nullable().optional(),
   pixel: pixelSchema.partial().optional(),
   aiAgent: aiAgentSchema.partial().optional(),

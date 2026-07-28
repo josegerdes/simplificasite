@@ -46,7 +46,7 @@ export default function AiConversationsPage() {
         <p className="text-sm text-muted-foreground">Revise a qualidade dos atendimentos automáticos e identifique leads quentes</p>
       </div>
 
-      <div className="rounded-lg border bg-card">
+      <div className="overflow-x-auto rounded-lg border bg-card">
         <Table>
           <TableHeader>
             <TableRow>

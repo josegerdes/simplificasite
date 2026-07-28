@@ -8,11 +8,12 @@ export function toAdminSiteConfig(config: SiteConfigDoc) {
   return {
     brandName: config.brandName,
     logoUrl: config.logoUrl,
+    heroImageUrl: config.heroImageUrl,
     heroTitle: config.heroTitle,
     heroSubtitle: config.heroSubtitle,
     pillars: config.pillars,
     testimonials: config.testimonials,
-    location: config.location,
+    locations: config.locations,
     whatsappNumber: config.whatsappNumber,
     pixel: config.pixel,
     aiAgent: config.aiAgent,
@@ -26,11 +27,12 @@ export function toPublicSiteConfig(config: SiteConfigDoc) {
   return {
     brandName: config.brandName,
     logoUrl: config.logoUrl,
+    heroImageUrl: config.heroImageUrl,
     heroTitle: config.heroTitle,
     heroSubtitle: config.heroSubtitle,
     pillars: config.pillars,
     testimonials: config.testimonials,
-    location: config.location,
+    locations: config.locations,
     whatsappNumber: config.whatsappNumber,
     pixel: config.pixel.enabled
       ? { pixelId: config.pixel.pixelId, testEventCode: config.pixel.testEventCode, events: config.pixel.events }

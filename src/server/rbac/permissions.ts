@@ -75,6 +75,17 @@ export const PERMISSION_CATEGORIES: PermissionCategory[] = [
     ],
   },
   {
+    key: "contact",
+    label: "Contato",
+    permissions: [
+      {
+        key: "contact.manage",
+        label: "Gerenciar mensagens de contato",
+        description: "Ver e responder mensagens enviadas pela página de Contato do site",
+      },
+    ],
+  },
+  {
     key: "administration",
     label: "Administração",
     permissions: [

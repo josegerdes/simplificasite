@@ -192,16 +192,25 @@ export interface Testimonial {
   quote: string;
 }
 
+export interface SiteConfigLocation {
+  id: string;
+  name: string;
+  address: string;
+}
+
 export interface SiteConfigDoc {
   _id: ObjectId;
   singleton: true;
   brandName: string;
   logoUrl: string;
+  /** Imagem de fundo do hero da home — configurável pelo admin (upload ou URL). */
+  heroImageUrl: string;
   heroTitle: string;
   heroSubtitle: string;
   pillars: { title: string; description: string }[];
   testimonials: Testimonial[];
-  location: string;
+  /** Mais de uma unidade (ex: Rio + Minas) — cada uma vira um mini-mapa embutido no site. */
+  locations: SiteConfigLocation[];
   whatsappNumber: string | null;
   pixel: SiteConfigPixelSettings;
   aiAgent: SiteConfigAiAgentSettings;
@@ -222,6 +231,21 @@ export interface AiConversationDoc {
   messages: AiConversationMessage[];
   leadName: string | null;
   leadContact: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type ContactCategory = "duvida" | "vendas" | "financeiro" | "reclamacao";
+export type ContactMessageStatus = "new" | "in_progress" | "resolved";
+
+export interface ContactMessageDoc {
+  _id: ObjectId;
+  category: ContactCategory;
+  name: string;
+  email: string;
+  phone: string | null;
+  message: string;
+  status: ContactMessageStatus;
   createdAt: Date;
   updatedAt: Date;
 }

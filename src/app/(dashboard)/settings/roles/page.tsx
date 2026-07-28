@@ -110,7 +110,7 @@ export default function RolesPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_1fr]">
-        <div className="rounded-lg border bg-card">
+        <div className="overflow-x-auto rounded-lg border bg-card">
           <div className="flex items-center justify-between border-b px-3 py-2">
             <span className="text-sm font-medium">Roles ({roles?.length ?? 0})</span>
             <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => createRole.mutate()}>

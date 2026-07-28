@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { title: "Início", href: "/" },
   { title: "Cursos", href: "/cursos" },
+  { title: "Contato", href: "/contato" },
 ];
 
 export function SiteHeader({ brandName, logoUrl }: { brandName: string; logoUrl: string }) {
@@ -19,18 +20,19 @@ export function SiteHeader({ brandName, logoUrl }: { brandName: string; logoUrl:
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-ink/95 backdrop-blur supports-[backdrop-filter]:bg-brand-ink/80">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex h-20 items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <img src={logoUrl} alt={brandName} className="h-7 w-auto brightness-0 invert" />
+          {/* Sem filtro de cor — a logo já tem a identidade visual (teal) e não pode ser alterada. */}
+          <img src={logoUrl} alt={brandName} className="h-10 w-auto" />
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-8 md:flex">
           {NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "text-sm font-medium text-white/80 transition-colors hover:text-white",
+                "text-base font-semibold text-white/80 transition-colors hover:text-white",
                 pathname === item.href && "text-white"
               )}
             >
@@ -54,7 +56,7 @@ export function SiteHeader({ brandName, logoUrl }: { brandName: string; logoUrl:
         <div className="border-t border-white/10 bg-brand-ink px-4 py-4 md:hidden">
           <nav className="flex flex-col gap-3">
             {NAV.map((item) => (
-              <Link key={item.href} href={item.href} className="text-sm font-medium text-white/80" onClick={() => setOpen(false)}>
+              <Link key={item.href} href={item.href} className="text-base font-semibold text-white/80" onClick={() => setOpen(false)}>
                 {item.title}
               </Link>
             ))}

@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api-client";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { SiteConfigAdmin } from "@/app/(dashboard)/site-config/types";
 
 export default function SiteConfigPage() {
@@ -68,15 +69,13 @@ export default function SiteConfigPage() {
               <CardTitle className="text-base">Identidade</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Nome da marca</Label>
-                  <Input value={form.brandName} onChange={(e) => setForm({ ...form, brandName: e.target.value })} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>URL da logo</Label>
-                  <Input value={form.logoUrl} onChange={(e) => setForm({ ...form, logoUrl: e.target.value })} />
-                </div>
+              <div className="space-y-1.5">
+                <Label>Nome da marca</Label>
+                <Input value={form.brandName} onChange={(e) => setForm({ ...form, brandName: e.target.value })} />
+              </div>
+              <div className="max-w-xs space-y-1.5">
+                <Label>Logo</Label>
+                <ImageUploadField value={form.logoUrl} onChange={(url) => setForm({ ...form, logoUrl: url })} aspectClassName="aspect-[3/1]" />
               </div>
               <div className="space-y-1.5">
                 <Label>WhatsApp de contato (com DDI, ex: 5521999999999)</Label>
@@ -107,6 +106,15 @@ export default function SiteConfigPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-1.5">
+                  <Label>Banner de fundo</Label>
+                  <p className="text-xs text-muted-foreground">Tamanho ideal: 1920×1080px (bem larga) — ocupa a tela inteira atrás do título.</p>
+                  <ImageUploadField
+                    value={form.heroImageUrl}
+                    onChange={(url) => setForm({ ...form, heroImageUrl: url })}
+                    aspectClassName="aspect-video"
+                  />
+                </div>
+                <div className="space-y-1.5">
                   <Label>Título</Label>
                   <Textarea rows={2} value={form.heroTitle} onChange={(e) => setForm({ ...form, heroTitle: e.target.value })} />
                 </div>
@@ -114,16 +122,71 @@ export default function SiteConfigPage() {
                   <Label>Subtítulo</Label>
                   <Textarea rows={3} value={form.heroSubtitle} onChange={(e) => setForm({ ...form, heroSubtitle: e.target.value })} />
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Localização</Label>
-                  <Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-                </div>
                 <div className="flex justify-end">
                   <Button
-                    onClick={() => save.mutate({ heroTitle: form.heroTitle, heroSubtitle: form.heroSubtitle, location: form.location })}
+                    onClick={() =>
+                      save.mutate({ heroImageUrl: form.heroImageUrl, heroTitle: form.heroTitle, heroSubtitle: form.heroSubtitle })
+                    }
                     loading={save.isPending}
                   >
                     Salvar
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-base">Unidades</CardTitle>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    setForm({
+                      ...form,
+                      locations: [...form.locations, { id: crypto.randomUUID(), name: "", address: "" }],
+                    })
+                  }
+                >
+                  <Plus className="h-4 w-4" />
+                  Adicionar
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {form.locations.map((location, index) => (
+                  <div key={location.id} className="flex gap-2 rounded-md border p-3">
+                    <div className="flex-1 space-y-2">
+                      <Input
+                        placeholder="Nome da unidade (ex: Unidade Rio de Janeiro)"
+                        value={location.name}
+                        onChange={(e) => {
+                          const locations = [...form.locations];
+                          locations[index] = { ...location, name: e.target.value };
+                          setForm({ ...form, locations });
+                        }}
+                      />
+                      <Input
+                        placeholder="Endereço completo (usado no mini-mapa)"
+                        value={location.address}
+                        onChange={(e) => {
+                          const locations = [...form.locations];
+                          locations[index] = { ...location, address: e.target.value };
+                          setForm({ ...form, locations });
+                        }}
+                      />
+                    </div>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => setForm({ ...form, locations: form.locations.filter((_, i) => i !== index) })}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+                <div className="flex justify-end">
+                  <Button onClick={() => save.mutate({ locations: form.locations })} loading={save.isPending}>
+                    Salvar unidades
                   </Button>
                 </div>
               </CardContent>

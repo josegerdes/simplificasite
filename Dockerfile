@@ -25,7 +25,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs \
   && adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
+# --chown aqui é obrigatório: sem ele o diretório fica dono de root e o container
+# (que roda como usuário `nextjs` sem privilégio) não consegue GRAVAR uploads em
+# public/uploads em runtime — só conseguiria servir os arquivos que já vieram do build.
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
