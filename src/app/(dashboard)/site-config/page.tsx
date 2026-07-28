@@ -75,6 +75,9 @@ export default function SiteConfigPage() {
               </div>
               <div className="max-w-xs space-y-1.5">
                 <Label>Logo</Label>
+                <p className="text-xs text-muted-foreground">
+                  Tamanho ideal: 600×200px (proporção 3:1), fundo transparente (PNG) — aparece no menu do site.
+                </p>
                 <ImageUploadField value={form.logoUrl} onChange={(url) => setForm({ ...form, logoUrl: url })} aspectClassName="aspect-[3/1]" />
               </div>
               <div className="space-y-1.5">

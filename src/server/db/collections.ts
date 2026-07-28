@@ -1,5 +1,6 @@
 import { Db } from "mongodb";
 import type {
+  AbandonedCartDoc,
   AiConversationDoc,
   ContactMessageDoc,
   CourseDoc,
@@ -25,4 +26,5 @@ export const collections = {
   siteConfig: (db: Db) => db.collection<SiteConfigDoc>("siteConfig"),
   aiConversations: (db: Db) => db.collection<AiConversationDoc>("aiConversations"),
   contactMessages: (db: Db) => db.collection<ContactMessageDoc>("contactMessages"),
+  abandonedCarts: (db: Db) => db.collection<AbandonedCartDoc>("abandonedCarts"),
 };

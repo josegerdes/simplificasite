@@ -114,6 +114,41 @@ export interface EnrollmentAddress {
   state: string | null;
 }
 
+export type AbandonedCartStatus = "open" | "contacted" | "converted" | "lost";
+export type CheckoutStep = "identify" | "details" | "payment";
+
+/**
+ * Rastreia quem começou o checkout mas não completou a matrícula — salvo progressivamente
+ * enquanto a pessoa preenche o formulário (não só no fim), pra o time comercial conseguir
+ * ligar/mandar WhatsApp com o que já foi digitado em vez de perder o lead. Vira "converted"
+ * assim que uma `EnrollmentDoc` real é criada com a mesma sessão.
+ */
+export interface AbandonedCartDoc {
+  _id: ObjectId;
+  sessionId: string;
+  courseId: ObjectId;
+  courseName: string;
+  courseSlug: string;
+  step: CheckoutStep;
+  studentName: string | null;
+  studentEmail: string | null;
+  studentPhone: string | null;
+  studentCpf: string | null;
+  utm: {
+    source: string | null;
+    medium: string | null;
+    campaign: string | null;
+    content: string | null;
+    term: string | null;
+  };
+  status: AbandonedCartStatus;
+  notes: ContactNote[];
+  convertedEnrollmentId: ObjectId | null;
+  createdAt: Date;
+  updatedAt: Date;
+  lastActivityAt: Date;
+}
+
 export interface EnrollmentDoc {
   _id: ObjectId;
   courseId: ObjectId;

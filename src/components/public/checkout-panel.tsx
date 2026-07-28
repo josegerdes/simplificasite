@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -45,6 +45,16 @@ interface CheckoutSession {
   purchaseEventId: string;
 }
 
+function getCheckoutSessionId(): string {
+  const key = "sdv_checkout_session";
+  let id = window.localStorage.getItem(key);
+  if (!id) {
+    id = crypto.randomUUID();
+    window.localStorage.setItem(key, id);
+  }
+  return id;
+}
+
 interface LookupResponse {
   found: boolean;
   profile?: {
@@ -71,6 +81,8 @@ export function CheckoutPanel({ course }: { course: PublicCourseCardData & { mod
   const [lookingUp, setLookingUp] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [welcomeName, setWelcomeName] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const trackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutFormSchema),
@@ -90,6 +102,47 @@ export function CheckoutPanel({ course }: { course: PublicCourseCardData & { mod
     },
   });
 
+  useEffect(() => {
+    setSessionId(getCheckoutSessionId());
+  }, []);
+
+  // Salva progressivamente o que já foi digitado (nome, email, telefone, CPF) enquanto a
+  // pessoa preenche — sem isso, quem abandona o checkout no meio some sem deixar rastro
+  // nenhum pro vendedor tentar contato manual depois (ver /abandoned-carts no admin).
+  function trackProgress(values: Partial<CheckoutFormValues>) {
+    if (!sessionId) return;
+    if (!values.studentName && !values.studentEmail && !values.studentPhone && !values.studentCpf) return;
+    fetch("/api/public/checkout/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId,
+        courseSlug: course.slug,
+        step,
+        studentName: values.studentName || null,
+        studentEmail: values.studentEmail || null,
+        studentPhone: values.studentPhone || null,
+        studentCpf: values.studentCpf || null,
+        utm: readUtmFromLocation(),
+      }),
+    }).catch(() => {
+      // best-effort — nunca deve travar ou avisar erro no checkout real
+    });
+  }
+
+  useEffect(() => {
+    if (!sessionId || !open || step === "payment") return;
+    const subscription = form.watch((values) => {
+      if (trackTimer.current) clearTimeout(trackTimer.current);
+      trackTimer.current = setTimeout(() => trackProgress(values), 900);
+    });
+    return () => {
+      subscription.unsubscribe();
+      if (trackTimer.current) clearTimeout(trackTimer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId, open, step]);
+
   function openCheckout() {
     trackPixelEvent("InitiateCheckout", { content_ids: [course.slug], currency: "BRL", value: course.price });
     setOpen(true);
@@ -104,6 +157,7 @@ export function CheckoutPanel({ course }: { course: PublicCourseCardData & { mod
         method: "POST",
         body: JSON.stringify({
           courseSlug: course.slug,
+          sessionId,
           studentName: values.studentName,
           studentEmail: values.studentEmail,
           studentPhone: values.studentPhone,
@@ -259,7 +313,15 @@ export function CheckoutPanel({ course }: { course: PublicCourseCardData & { mod
                     <FormItem>
                       <FormLabel>CPF</FormLabel>
                       <FormControl>
-                        <Input inputMode="numeric" placeholder="000.000.000-00" {...field} />
+                        <Input
+                          inputMode="numeric"
+                          placeholder="000.000.000-00"
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            if (e.target.value.replace(/\D/g, "").length >= 11) form.setFocus("studentPhone");
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -309,7 +371,13 @@ export function CheckoutPanel({ course }: { course: PublicCourseCardData & { mod
                     <FormItem>
                       <FormLabel>Nome completo</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input
+                          {...field}
+                          onBlur={(e) => {
+                            field.onBlur();
+                            if (e.target.value.trim().split(" ").filter(Boolean).length >= 2) form.setFocus("studentEmail");
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

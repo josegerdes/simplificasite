@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CalendarDays, Clock, MapPin, Users } from "lucide-react";
 
@@ -11,8 +12,31 @@ import { CheckoutPanel } from "@/components/public/checkout-panel";
 import { ViewContentTracker } from "@/components/public/view-content-tracker";
 import { EmentaSection } from "@/components/public/ementa-section";
 import { InstitutionalSection } from "@/components/public/institutional-section";
+import { CourseJsonLd } from "@/components/public/course-json-ld";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const db = await connectDB();
+  try {
+    const course = await coursesService.getPublicCourseBySlug(db, params.slug);
+    const title = `${course.name} — Matrícula por R$${course.price.toFixed(0)}`;
+    return {
+      title,
+      description: course.shortDescription,
+      alternates: { canonical: `/cursos/${course.slug}` },
+      openGraph: {
+        title,
+        description: course.shortDescription,
+        url: `/cursos/${course.slug}`,
+        images: course.coverImageUrl ? [{ url: course.coverImageUrl }] : undefined,
+      },
+      twitter: { title, description: course.shortDescription, images: course.coverImageUrl ? [course.coverImageUrl] : undefined },
+    };
+  } catch {
+    return { title: "Curso não encontrado" };
+  }
+}
 
 export default async function CourseDetailPage({ params }: { params: { slug: string } }) {
   const db = await connectDB();
@@ -31,6 +55,7 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
   return (
     <main>
       <ViewContentTracker courseSlug={course.slug} courseName={course.name} price={course.price} />
+      <CourseJsonLd course={course} brandName={siteConfig.brandName} />
 
       <section className="relative">
         <div

@@ -6,6 +6,7 @@ import { Payment } from "mercadopago";
 import { EnrollmentDoc, PaymentStatus } from "@/server/db/schema";
 import { ApiError } from "@/server/auth/guards";
 import { onlyDigits } from "@/server/lib/normalize";
+import * as abandonedCartsService from "@/server/modules/abandoned-carts/service";
 import * as coursesRepo from "@/server/modules/courses/repository";
 import * as enrollmentsRepo from "@/server/modules/enrollments/repository";
 import * as sellersService from "@/server/modules/sellers/service";
@@ -97,6 +98,7 @@ export async function startCheckout(db: Db, input: StartCheckoutInput) {
     updatedAt: now,
   };
   await enrollmentsRepo.insertEnrollment(db, enrollment);
+  await abandonedCartsService.markConverted(db, input.sessionId ?? undefined, course._id, enrollment._id);
 
   return {
     enrollmentId: enrollment._id.toHexString(),

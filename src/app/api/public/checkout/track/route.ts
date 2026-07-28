@@ -2,15 +2,15 @@ import { NextResponse } from "next/server";
 
 import { connectDB } from "@/server/db/client";
 import { withPublicApiHandler } from "@/server/http/with-api-handler";
-import { chatRequestSchema } from "@/server/modules/ai-agent/types";
-import { streamChatReply } from "@/server/modules/ai-agent/chat-service";
+import * as abandonedCartsService from "@/server/modules/abandoned-carts/service";
+import { trackAbandonedCartSchema } from "@/server/modules/abandoned-carts/types";
 
 export const dynamic = "force-dynamic";
 
 export const POST = withPublicApiHandler(async (request) => {
   const body = await request.json();
-  const input = chatRequestSchema.parse(body);
+  const input = trackAbandonedCartSchema.parse(body);
   const db = await connectDB();
-  const stream = await streamChatReply(db, input);
-  return new NextResponse(stream, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
+  await abandonedCartsService.trackCheckoutProgress(db, input);
+  return NextResponse.json({ ok: true });
 });

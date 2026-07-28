@@ -32,6 +32,9 @@ export function withApiHandler<Ctx = Record<string, never>>(
       if (error instanceof ZodError) {
         return NextResponse.json({ message: "Dados inválidos", issues: error.issues }, { status: 422 });
       }
+      if (error instanceof Error && error.name === "BSONError") {
+        return NextResponse.json({ message: "Identificador inválido" }, { status: 400 });
+      }
       console.error(error);
       return NextResponse.json({ message: "Erro interno" }, { status: 500 });
     }
@@ -54,6 +57,9 @@ export function withPublicApiHandler<Ctx = Record<string, never>>(
       }
       if (error instanceof ZodError) {
         return NextResponse.json({ message: "Dados inválidos", issues: error.issues }, { status: 422 });
+      }
+      if (error instanceof Error && error.name === "BSONError") {
+        return NextResponse.json({ message: "Identificador inválido" }, { status: 400 });
       }
       console.error(error);
       return NextResponse.json({ message: "Erro interno" }, { status: 500 });

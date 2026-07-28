@@ -1,9 +1,19 @@
+import type { Metadata } from "next";
+
 import { connectDB } from "@/server/db/client";
 import * as coursesService from "@/server/modules/courses/service";
 import { CatalogTabs } from "@/components/public/catalog-tabs";
 import { PastCoursesSection } from "@/components/public/past-courses-section";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Cursos de Odontologia Presenciais",
+  description:
+    "Especializações presenciais de odontologia com vagas limitadas e prática em pacientes reais. Garanta sua vaga pagando só a matrícula.",
+  alternates: { canonical: "/cursos" },
+  openGraph: { title: "Cursos de Odontologia Presenciais", url: "/cursos" },
+};
 
 export default async function CoursesCatalogPage() {
   const db = await connectDB();

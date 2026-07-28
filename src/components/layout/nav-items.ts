@@ -10,6 +10,7 @@ import {
   MessageSquareText,
   Shield,
   ShoppingBag,
+  ShoppingCart,
   Users,
 } from "lucide-react";
 
@@ -39,6 +40,7 @@ export const NAV_GROUPS: NavGroup[] = [
     title: "Comercial",
     items: [
       { title: "Matrículas", url: "/enrollments", icon: GraduationCap, permission: "sales.view" },
+      { title: "Carrinhos abandonados", url: "/abandoned-carts", icon: ShoppingCart, permission: "sales.view" },
       { title: "Vendedores", url: "/sellers", icon: ShoppingBag, permission: "people.manage" },
       { title: "Mensagens de contato", url: "/contact-messages", icon: Inbox, permission: "contact.manage" },
     ],

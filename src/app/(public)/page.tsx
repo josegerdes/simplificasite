@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { MapPin, ShieldCheck, Sparkles } from "lucide-react";
 
@@ -10,8 +11,21 @@ import { CourseCard } from "@/components/public/course-card";
 import { OnlineTeaserRow } from "@/components/public/online-teaser-row";
 import { TestimonialsCarousel } from "@/components/public/testimonials-carousel";
 import { LocationMap } from "@/components/public/location-map";
+import { OrganizationJsonLd } from "@/components/public/organization-json-ld";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const db = await connectDB();
+  const config = await siteConfigService.getPublicSiteConfig(db);
+  return {
+    title: config.heroTitle,
+    description: config.heroSubtitle,
+    alternates: { canonical: "/" },
+    openGraph: { title: config.heroTitle, description: config.heroSubtitle, images: [{ url: config.heroImageUrl }], url: "/" },
+    twitter: { title: config.heroTitle, description: config.heroSubtitle, images: [config.heroImageUrl] },
+  };
+}
 
 export default async function HomePage() {
   const db = await connectDB();
@@ -22,6 +36,8 @@ export default async function HomePage() {
 
   return (
     <main>
+      <OrganizationJsonLd brandName={config.brandName} logoUrl={config.logoUrl} locations={config.locations} />
+
       <section className="relative flex min-h-[85vh] items-center overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${config.heroImageUrl})` }} />
         <div className="absolute inset-0 bg-gradient-to-t from-brand-ink via-brand-ink/85 to-brand-ink/50" />
