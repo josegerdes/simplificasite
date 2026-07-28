@@ -5,6 +5,7 @@ import { Bot, Loader2, MessageCircle, Send, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { randomId } from "@/lib/random-id";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -15,7 +16,7 @@ function getSessionId(): string {
   const key = "sdv_chat_session";
   let id = typeof window !== "undefined" ? window.localStorage.getItem(key) : null;
   if (!id) {
-    id = crypto.randomUUID();
+    id = randomId();
     window.localStorage.setItem(key, id);
   }
   return id;

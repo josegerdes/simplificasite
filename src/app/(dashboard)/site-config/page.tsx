@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { apiFetch } from "@/lib/api-client";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { SiteConfigAdmin } from "@/app/(dashboard)/site-config/types";
+import { randomId } from "@/lib/random-id";
 
 export default function SiteConfigPage() {
   const queryClient = useQueryClient();
@@ -147,7 +148,7 @@ export default function SiteConfigPage() {
                   onClick={() =>
                     setForm({
                       ...form,
-                      locations: [...form.locations, { id: crypto.randomUUID(), name: "", address: "" }],
+                      locations: [...form.locations, { id: randomId(), name: "", address: "" }],
                     })
                   }
                 >
@@ -257,7 +258,7 @@ export default function SiteConfigPage() {
                   onClick={() =>
                     setForm({
                       ...form,
-                      testimonials: [...form.testimonials, { id: crypto.randomUUID(), name: "", role: "", quote: "" }],
+                      testimonials: [...form.testimonials, { id: randomId(), name: "", role: "", quote: "" }],
                     })
                   }
                 >

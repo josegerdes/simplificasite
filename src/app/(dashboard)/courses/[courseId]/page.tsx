@@ -34,6 +34,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { apiFetch, ApiClientError } from "@/lib/api-client";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { AiFieldButton } from "@/components/admin/ai-field-button";
+import { randomId } from "@/lib/random-id";
 import { ChecklistItem, CourseAdmin, CourseStatus, EmentaState } from "@/app/(dashboard)/courses/types";
 
 const STATUS_OPTIONS: { value: CourseStatus; label: string }[] = [
@@ -209,7 +210,7 @@ function ChecklistPanel({ courseId, course }: { courseId: string; course: Course
     if (!newLabel.trim()) return;
     save.mutate([
       ...course.checklist,
-      { id: crypto.randomUUID(), label: newLabel.trim(), done: false, isDefault: false },
+      { id: randomId(), label: newLabel.trim(), done: false, isDefault: false },
     ]);
     setNewLabel("");
   }

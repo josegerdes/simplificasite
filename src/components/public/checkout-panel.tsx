@@ -19,6 +19,7 @@ import { readUtmFromLocation } from "@/lib/utm";
 import { trackPixelEvent } from "@/components/public/pixel-script";
 import { PaymentBrick } from "@/components/public/payment-brick";
 import { CountdownTimer } from "@/components/public/countdown-timer";
+import { randomId } from "@/lib/random-id";
 import type { PublicCourseCardData } from "@/components/public/course-card";
 
 const checkoutFormSchema = z.object({
@@ -49,7 +50,7 @@ function getCheckoutSessionId(): string {
   const key = "sdv_checkout_session";
   let id = window.localStorage.getItem(key);
   if (!id) {
-    id = crypto.randomUUID();
+    id = randomId();
     window.localStorage.setItem(key, id);
   }
   return id;
