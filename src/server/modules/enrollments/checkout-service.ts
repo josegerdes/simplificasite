@@ -5,6 +5,7 @@ import { Payment } from "mercadopago";
 
 import { EnrollmentDoc, PaymentStatus } from "@/server/db/schema";
 import { ApiError } from "@/server/auth/guards";
+import { onlyDigits } from "@/server/lib/normalize";
 import * as coursesRepo from "@/server/modules/courses/repository";
 import * as enrollmentsRepo from "@/server/modules/enrollments/repository";
 import * as sellersService from "@/server/modules/sellers/service";
@@ -31,6 +32,35 @@ function mapMpStatus(mpStatus: string): PaymentStatus {
   }
 }
 
+/**
+ * Confirmação de identidade de dois fatores (CPF + telefone) pra agilizar a matrícula de
+ * quem já comprou antes — só devolve dado pessoal salvo se os dois baterem juntos (LGPD:
+ * CPF sozinho não é segredo suficiente pra liberar nome/endereço de alguém pra qualquer um
+ * que descubra o número). Sem match, o formulário completo é preenchido do zero mesmo.
+ */
+export async function lookupStudent(db: Db, cpfRaw: string, phoneRaw: string) {
+  const cpf = onlyDigits(cpfRaw);
+  const phone = onlyDigits(phoneRaw);
+  if (cpf.length < 11 || phone.length < 8) {
+    return { found: false as const };
+  }
+
+  const enrollment = await enrollmentsRepo.findMostRecentByCpfAndPhone(db, cpf, phone);
+  if (!enrollment) return { found: false as const };
+
+  return {
+    found: true as const,
+    profile: {
+      studentName: enrollment.studentName,
+      studentEmail: enrollment.studentEmail,
+      studentRg: enrollment.studentRg,
+      studentBornDate: enrollment.studentBornDate,
+      studentCivilState: enrollment.studentCivilState,
+      address: enrollment.address,
+    },
+  };
+}
+
 export async function startCheckout(db: Db, input: StartCheckoutInput) {
   const course = await coursesRepo.findCourseBySlug(db, input.courseSlug);
   if (!course || course.status === "DRAFT" || course.status === "CLOSED") {
@@ -46,8 +76,8 @@ export async function startCheckout(db: Db, input: StartCheckoutInput) {
     courseId: course._id,
     studentName: input.studentName,
     studentEmail: input.studentEmail.toLowerCase(),
-    studentPhone: input.studentPhone,
-    studentCpf: input.studentCpf,
+    studentPhone: onlyDigits(input.studentPhone),
+    studentCpf: onlyDigits(input.studentCpf),
     studentRg: input.studentRg,
     studentBornDate: input.studentBornDate,
     studentCivilState: input.studentCivilState,

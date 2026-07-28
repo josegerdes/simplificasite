@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-import { CalendarClock, ShieldCheck, Users } from "lucide-react";
+import { ArrowLeft, CalendarClock, Lock, ShieldCheck, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -22,10 +22,10 @@ import { CountdownTimer } from "@/components/public/countdown-timer";
 import type { PublicCourseCardData } from "@/components/public/course-card";
 
 const checkoutFormSchema = z.object({
+  studentCpf: z.string().min(11, "Informe um CPF válido"),
+  studentPhone: z.string().min(8, "Informe um telefone válido"),
   studentName: z.string().min(3, "Informe seu nome completo"),
   studentEmail: z.string().email("Informe um email válido"),
-  studentPhone: z.string().min(8, "Informe um telefone válido"),
-  studentCpf: z.string().min(11, "Informe um CPF válido"),
   studentRg: z.string().optional(),
   studentBornDate: z.string().optional(),
   studentCivilState: z.string().optional(),
@@ -45,20 +45,40 @@ interface CheckoutSession {
   purchaseEventId: string;
 }
 
+interface LookupResponse {
+  found: boolean;
+  profile?: {
+    studentName: string;
+    studentEmail: string;
+    studentRg: string | null;
+    studentBornDate: string | null;
+    studentCivilState: string | null;
+    address: {
+      postalCode: string | null;
+      street: string | null;
+      neighborhood: string | null;
+      city: string | null;
+      state: string | null;
+    };
+  };
+}
+
 export function CheckoutPanel({ course }: { course: PublicCourseCardData & { modality?: string } }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [step, setStep] = useState<"form" | "payment">("form");
+  const [step, setStep] = useState<"identify" | "details" | "payment">("identify");
   const [session, setSession] = useState<CheckoutSession | null>(null);
+  const [lookingUp, setLookingUp] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [welcomeName, setWelcomeName] = useState<string | null>(null);
 
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutFormSchema),
     defaultValues: {
+      studentCpf: "",
+      studentPhone: "",
       studentName: "",
       studentEmail: "",
-      studentPhone: "",
-      studentCpf: "",
       studentRg: "",
       studentBornDate: "",
       studentCivilState: "",
@@ -73,10 +93,11 @@ export function CheckoutPanel({ course }: { course: PublicCourseCardData & { mod
   function openCheckout() {
     trackPixelEvent("InitiateCheckout", { content_ids: [course.slug], currency: "BRL", value: course.price });
     setOpen(true);
-    setStep("form");
+    setStep("identify");
+    setWelcomeName(null);
   }
 
-  async function onSubmitForm(values: CheckoutFormValues) {
+  async function submitCheckout(values: CheckoutFormValues) {
     setSubmitting(true);
     try {
       const result = await apiFetch<CheckoutSession>("/api/public/checkout", {
@@ -106,6 +127,44 @@ export function CheckoutPanel({ course }: { course: PublicCourseCardData & { mod
       toast.error(error instanceof Error ? error.message : "Não foi possível iniciar a matrícula");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleIdentifyContinue() {
+    const valid = await form.trigger(["studentCpf", "studentPhone"]);
+    if (!valid) return;
+
+    setLookingUp(true);
+    try {
+      const { studentCpf, studentPhone } = form.getValues();
+      const result = await apiFetch<LookupResponse>("/api/public/checkout/lookup", {
+        method: "POST",
+        body: JSON.stringify({ cpf: studentCpf, phone: studentPhone }),
+      });
+
+      if (result.found && result.profile) {
+        const p = result.profile;
+        form.setValue("studentName", p.studentName);
+        form.setValue("studentEmail", p.studentEmail);
+        form.setValue("studentRg", p.studentRg ?? "");
+        form.setValue("studentBornDate", p.studentBornDate ?? "");
+        form.setValue("studentCivilState", p.studentCivilState ?? "");
+        form.setValue("postalCode", p.address.postalCode ?? "");
+        form.setValue("street", p.address.street ?? "");
+        form.setValue("neighborhood", p.address.neighborhood ?? "");
+        form.setValue("city", p.address.city ?? "");
+        form.setValue("state", p.address.state ?? "");
+        setWelcomeName(p.studentName.split(" ")[0] ?? p.studentName);
+        // Já temos tudo que precisamos — pula direto pro pagamento em vez de pedir de novo.
+        await submitCheckout(form.getValues());
+      } else {
+        setStep("details");
+      }
+    } catch {
+      // Se a busca falhar, não trava o fluxo — só cai no formulário completo.
+      setStep("details");
+    } finally {
+      setLookingUp(false);
     }
   }
 
@@ -161,12 +220,69 @@ export function CheckoutPanel({ course }: { course: PublicCourseCardData & { mod
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{step === "form" ? "Garanta sua vaga" : "Pagamento"}</DialogTitle>
+            <DialogTitle>
+              {step === "identify" && "Garanta sua vaga"}
+              {step === "details" && "Só mais alguns dados"}
+              {step === "payment" && "Pagamento"}
+            </DialogTitle>
           </DialogHeader>
 
-          {step === "form" && (
-            <Form {...form}>
-              <form className="space-y-4" onSubmit={form.handleSubmit(onSubmitForm)}>
+          <Form {...form}>
+            {step === "identify" && (
+              <div className="space-y-4">
+                <p className="text-sm text-white/60">
+                  Informe CPF e celular — se você já comprou com a gente, preenchemos o resto automaticamente.
+                </p>
+                <FormField
+                  control={form.control}
+                  name="studentCpf"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>CPF</FormLabel>
+                      <FormControl>
+                        <Input inputMode="numeric" placeholder="000.000.000-00" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="studentPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Celular / WhatsApp</FormLabel>
+                      <FormControl>
+                        <Input inputMode="tel" placeholder="21999999999" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button type="button" variant="cta" className="w-full" loading={lookingUp} onClick={handleIdentifyContinue}>
+                  Continuar
+                </Button>
+
+                <p className="flex items-start gap-1.5 text-xs text-white/40">
+                  <Lock className="mt-0.5 h-3 w-3 shrink-0" />
+                  Usamos seu CPF e celular juntos só para localizar um cadastro existente e agilizar sua
+                  matrícula, conforme a LGPD — seus dados não são compartilhados com terceiros.
+                </p>
+              </div>
+            )}
+
+            {step === "details" && (
+              <form className="space-y-4" onSubmit={form.handleSubmit(submitCheckout)}>
+                <button
+                  type="button"
+                  onClick={() => setStep("identify")}
+                  className="flex items-center gap-1 text-xs text-white/50 hover:text-white"
+                >
+                  <ArrowLeft className="h-3 w-3" />
+                  Voltar
+                </button>
+
                 <FormField
                   control={form.control}
                   name="studentName"
@@ -180,48 +296,20 @@ export function CheckoutPanel({ course }: { course: PublicCourseCardData & { mod
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="studentEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <div className="grid grid-cols-2 gap-3">
-                  <FormField
-                    control={form.control}
-                    name="studentEmail"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input type="email" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="studentPhone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>WhatsApp</FormLabel>
-                        <FormControl>
-                          <Input placeholder="21999999999" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <FormField
-                    control={form.control}
-                    name="studentCpf"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>CPF</FormLabel>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                   <FormField
                     control={form.control}
                     name="studentRg"
@@ -339,11 +427,23 @@ export function CheckoutPanel({ course }: { course: PublicCourseCardData & { mod
                   Continuar para pagamento — {formatBRL(course.price)}
                 </Button>
               </form>
-            </Form>
-          )}
+            )}
+          </Form>
 
           {step === "payment" && session && (
-            <PaymentBrick enrollmentId={session.enrollmentId} amount={session.amount} payerEmail={session.studentEmail} onResult={handlePaymentResult} />
+            <div className="space-y-3">
+              {welcomeName && (
+                <p className="rounded-md bg-brand-teal/10 px-3 py-2 text-sm text-brand-teal">
+                  Bem-vindo(a) de volta, {welcomeName}! Já preenchemos seus dados — falta só o pagamento.
+                </p>
+              )}
+              <PaymentBrick
+                enrollmentId={session.enrollmentId}
+                amount={session.amount}
+                payerEmail={session.studentEmail}
+                onResult={handlePaymentResult}
+              />
+            </div>
           )}
         </DialogContent>
       </Dialog>

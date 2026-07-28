@@ -1,13 +1,14 @@
 import { notFound } from "next/navigation";
-import { CalendarDays, Clock, Download, MapPin, Users } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { connectDB } from "@/server/db/client";
 import * as coursesService from "@/server/modules/courses/service";
+import * as ementaService from "@/server/modules/ementa/service";
 import { ApiError } from "@/server/auth/guards";
-import { formatBRL } from "@/lib/format";
 import { CheckoutPanel } from "@/components/public/checkout-panel";
 import { ViewContentTracker } from "@/components/public/view-content-tracker";
+import { EmentaSection } from "@/components/public/ementa-section";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
   }
+  const ementaModules = await ementaService.getPublishedEmentaModules(db, course.id, course.ementaPublished);
 
   return (
     <main>
@@ -80,16 +82,7 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
             </div>
           )}
 
-          {course.ementaPublished && (
-            <a
-              href={`/api/public/courses/${course.slug}/ementa-pdf`}
-              target="_blank"
-              className="inline-flex items-center gap-2 rounded-lg border border-brand-teal px-5 py-3 text-sm font-semibold text-brand-teal transition-colors hover:bg-brand-teal hover:text-white"
-            >
-              <Download className="h-4 w-4" />
-              Baixar ementa completa (PDF)
-            </a>
-          )}
+          <EmentaSection modules={ementaModules} courseSlug={course.slug} price={course.price} />
         </div>
 
         <div id="matricula">

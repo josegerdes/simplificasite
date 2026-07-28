@@ -15,6 +15,13 @@ export function findEnrollmentByMpPaymentId(db: Db, mpPaymentId: string) {
   return collections.enrollments(db).findOne({ mpPaymentId });
 }
 
+/** CPF + telefone juntos funcionam como confirmação de identidade de dois fatores pra
+ *  liberar o autopreenchimento (LGPD: só devolve dado pessoal salvo se os dois baterem,
+ *  não só o CPF sozinho, que não é segredo). Pega a matrícula mais recente com esse par. */
+export function findMostRecentByCpfAndPhone(db: Db, cpf: string, phone: string) {
+  return collections.enrollments(db).find({ studentCpf: cpf, studentPhone: phone }).sort({ createdAt: -1 }).limit(1).next();
+}
+
 export function findAllEnrollments(db: Db, filter: { sellerId?: string | null; courseId?: string; status?: string } = {}) {
   const query: Record<string, unknown> = {};
   if (filter.sellerId !== undefined) {

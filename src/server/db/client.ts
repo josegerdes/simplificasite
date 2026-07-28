@@ -28,6 +28,7 @@ async function ensureIndexes(db: Db): Promise<void> {
       db.collection("enrollments").createIndex({ paymentStatus: 1 }),
       db.collection("enrollments").createIndex({ mpPreferenceId: 1 }),
       db.collection("enrollments").createIndex({ mpPaymentId: 1 }),
+      db.collection("enrollments").createIndex({ studentCpf: 1, studentPhone: 1 }),
       db.collection("sellers").createIndex({ userId: 1 }),
       db.collection("aiConversations").createIndex({ sessionId: 1 }),
     ]);

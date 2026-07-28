@@ -20,6 +20,12 @@ const utmSchema = z
   })
   .default({});
 
+export const lookupStudentSchema = z.object({
+  cpf: z.string().min(11, "Informe um CPF válido"),
+  phone: z.string().min(8, "Informe um telefone válido"),
+});
+export type LookupStudentInput = z.infer<typeof lookupStudentSchema>;
+
 export const startCheckoutSchema = z.object({
   courseSlug: z.string().min(1),
   studentName: z.string().min(3, "Informe seu nome completo"),

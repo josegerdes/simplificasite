@@ -17,6 +17,18 @@ export async function getEmenta(db: Db, courseId: string) {
   return toPublicEmenta(ementa?.modules ?? [], ementa?.generatedByAi ?? false);
 }
 
+/** Versão pública — só devolve os módulos se o admin marcou a ementa como publicada,
+ *  pra a página do curso poder renderizar a seção visual (não só o link do PDF). */
+export async function getPublishedEmentaModules(
+  db: Db,
+  courseId: string,
+  ementaPublished: boolean
+): Promise<EmentaModule[]> {
+  if (!ementaPublished) return [];
+  const ementa = await ementaRepo.findEmentaByCourseId(db, ObjectId.createFromHexString(courseId));
+  return ementa?.modules ?? [];
+}
+
 export async function saveEmenta(db: Db, courseId: string, modules: EmentaModule[]) {
   const updated = await ementaRepo.upsertEmenta(db, ObjectId.createFromHexString(courseId), modules, false);
   return toPublicEmenta(updated?.modules ?? modules, false);
