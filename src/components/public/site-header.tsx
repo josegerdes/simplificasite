@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { title: "Início", href: "/" },
   { title: "Cursos", href: "/cursos" },
+  { title: "Unidades", href: "/#unidades" },
   { title: "Paciente Modelo", href: "/paciente-modelo" },
   { title: "Contato", href: "/contato" },
 ];

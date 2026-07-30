@@ -10,7 +10,7 @@ import { CourseRow } from "@/components/public/course-row";
 import { CourseCard } from "@/components/public/course-card";
 import { OnlineTeaserRow } from "@/components/public/online-teaser-row";
 import { TestimonialsCarousel } from "@/components/public/testimonials-carousel";
-import { LocationMap } from "@/components/public/location-map";
+import { UnitCard } from "@/components/public/unit-card";
 import { OrganizationJsonLd } from "@/components/public/organization-json-ld";
 
 export const dynamic = "force-dynamic";
@@ -81,15 +81,23 @@ export default async function HomePage() {
         <OnlineTeaserRow />
       </div>
 
-      <section className="border-y border-white/10 bg-white/[0.03] py-16">
+      <section className="border-y border-white/10 bg-white/[0.03] py-16 sm:py-20">
         <div className="container">
+          <p className="mb-3 flex items-center justify-center gap-2 text-center text-sm font-semibold uppercase tracking-widest text-brand-teal">
+            Por que a Simplifica
+          </p>
           <h2 className="font-heading text-center text-2xl font-bold text-white md:text-3xl">
             Conheça os pilares que nos tornam referência
           </h2>
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {config.pillars.map((pillar) => (
-              <div key={pillar.title} className="rounded-xl border border-white/10 bg-white/5 p-6">
-                <ShieldCheck className="mb-3 h-6 w-6 text-brand-teal" />
+              <div
+                key={pillar.title}
+                className="rounded-xl border border-white/10 bg-white/5 p-6 transition-colors hover:border-brand-teal/40 hover:bg-white/[0.07]"
+              >
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-brand-teal/15">
+                  <ShieldCheck className="h-5 w-5 text-brand-teal" />
+                </div>
                 <h3 className="font-heading mb-2 font-semibold text-white">{pillar.title}</h3>
                 <p className="text-sm text-white/60">{pillar.description}</p>
               </div>
@@ -109,30 +117,27 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-gradient-to-br from-brand-teal to-brand-tealDark py-16">
+      <section id="unidades" className="py-16 sm:py-20">
         <div className="container">
           <div className="flex flex-col items-center gap-3 text-center">
-            <MapPin className="h-8 w-8 text-white" />
-            <h2 className="font-heading text-2xl font-bold text-white md:text-3xl">Onde estamos</h2>
+            <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-brand-teal">
+              <MapPin className="h-4 w-4" />
+              Nossas unidades
+            </p>
+            <h2 className="font-heading text-2xl font-bold text-white md:text-3xl">
+              Simplifica Doctor no Rio de Janeiro e em Minas Gerais
+            </h2>
+            <p className="max-w-xl text-white/60">
+              Estrutura própria pra você aprender e praticar com todo o suporte, perto de você.
+            </p>
           </div>
-          <div className="mx-auto mt-8 grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="mx-auto mt-10 grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-2">
             {config.locations.map((location) => (
-              <div key={location.id} className="space-y-2">
-                <p className="font-heading text-sm font-semibold text-white">{location.name}</p>
-                <p className="text-sm text-white/80">{location.address}</p>
-                {location.imageUrl && (
-                  <img
-                    src={location.imageUrl}
-                    alt={location.name}
-                    className="h-40 w-full rounded-xl border border-white/10 object-cover"
-                  />
-                )}
-                <LocationMap name={location.name} address={location.address} />
-              </div>
+              <UnitCard key={location.id} location={location} />
             ))}
           </div>
-          <div className="mt-8 flex justify-center">
-            <Button asChild size="lg" variant="secondary">
+          <div className="mt-10 flex justify-center">
+            <Button asChild size="lg" variant="cta">
               <Link href="/cursos">Quero garantir minha vaga</Link>
             </Button>
           </div>

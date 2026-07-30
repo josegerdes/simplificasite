@@ -1,6 +1,6 @@
 import { MapPin, ShieldCheck } from "lucide-react";
 
-import { LocationMap } from "@/components/public/location-map";
+import { UnitCard } from "@/components/public/unit-card";
 
 export interface InstitutionalPillar {
   title: string;
@@ -57,19 +57,7 @@ export function InstitutionalSection({
           </p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {locations.map((location) => (
-              <div key={location.id} className="space-y-1.5">
-                <p className="text-sm text-white/80">
-                  <span className="font-semibold text-white">{location.name}:</span> {location.address}
-                </p>
-                {location.imageUrl && (
-                  <img
-                    src={location.imageUrl}
-                    alt={location.name}
-                    className="h-32 w-full rounded-lg border border-white/10 object-cover"
-                  />
-                )}
-                <LocationMap name={location.name} address={location.address} />
-              </div>
+              <UnitCard key={location.id} location={location} />
             ))}
           </div>
         </div>
