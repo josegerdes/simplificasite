@@ -9,6 +9,7 @@ import * as ementaService from "@/server/modules/ementa/service";
 import * as siteConfigService from "@/server/modules/site-config/service";
 import { ApiError } from "@/server/auth/guards";
 import { CheckoutPanel } from "@/components/public/checkout-panel";
+import { CourseLeadPanel } from "@/components/public/course-lead-panel";
 import { ViewContentTracker } from "@/components/public/view-content-tracker";
 import { EmentaSection } from "@/components/public/ementa-section";
 import { InstitutionalSection } from "@/components/public/institutional-section";
@@ -118,7 +119,7 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
         </div>
 
         <div id="matricula">
-          <CheckoutPanel course={course} />
+          {course.saleMode === "lead" ? <CourseLeadPanel course={course} /> : <CheckoutPanel course={course} />}
         </div>
       </section>
     </main>

@@ -20,6 +20,7 @@ export type CreateCourseInput = z.infer<typeof createCourseSchema>;
 
 export const updateCourseSchema = createCourseSchema.partial().extend({
   status: z.enum(["DRAFT", "PUBLISHED", "SOLD_OUT", "CLOSED"]).optional(),
+  saleMode: z.enum(["checkout", "lead"]).optional(),
   pixelOverride: z.object({ enabled: z.boolean(), pixelId: z.string().nullable() }).optional(),
 });
 export type UpdateCourseInput = z.infer<typeof updateCourseSchema>;

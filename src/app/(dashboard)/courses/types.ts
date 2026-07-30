@@ -1,5 +1,6 @@
 export type CourseModality = "PRESENCIAL" | "ONLINE";
 export type CourseStatus = "DRAFT" | "PUBLISHED" | "SOLD_OUT" | "CLOSED";
+export type CourseSaleMode = "checkout" | "lead";
 
 export interface CourseAdmin {
   id: string;
@@ -7,6 +8,7 @@ export interface CourseAdmin {
   name: string;
   modality: CourseModality;
   status: CourseStatus;
+  saleMode: CourseSaleMode;
   shortDescription: string;
   longDescription: string;
   highlights: string[];

@@ -33,6 +33,11 @@ export interface RoleDoc {
 
 export type CourseModality = "PRESENCIAL" | "ONLINE";
 export type CourseStatus = "DRAFT" | "PUBLISHED" | "SOLD_OUT" | "CLOSED";
+/** "checkout" = matrícula online completa (Mercado Pago, como hoje). "lead" = a página do
+ *  curso não vende nada — só captura nome/whatsapp/interesse e manda pro CRM externo, pro
+ *  time comercial fechar por fora. Admin escolhe por curso; default "checkout" preserva o
+ *  comportamento de todo curso já existente. */
+export type CourseSaleMode = "checkout" | "lead";
 
 export interface CoursePixelOverride {
   enabled: boolean;
@@ -45,6 +50,7 @@ export interface CourseDoc {
   name: string;
   modality: CourseModality;
   status: CourseStatus;
+  saleMode: CourseSaleMode;
   shortDescription: string;
   longDescription: string;
   highlights: string[];

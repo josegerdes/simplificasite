@@ -35,13 +35,18 @@ import { apiFetch, ApiClientError } from "@/lib/api-client";
 import { ImageUploadField } from "@/components/admin/image-upload-field";
 import { AiFieldButton } from "@/components/admin/ai-field-button";
 import { randomId } from "@/lib/random-id";
-import { ChecklistItem, CourseAdmin, CourseStatus, EmentaState } from "@/app/(dashboard)/courses/types";
+import { ChecklistItem, CourseAdmin, CourseSaleMode, CourseStatus, EmentaState } from "@/app/(dashboard)/courses/types";
 
 const STATUS_OPTIONS: { value: CourseStatus; label: string }[] = [
   { value: "DRAFT", label: "Rascunho" },
   { value: "PUBLISHED", label: "Publicado" },
   { value: "SOLD_OUT", label: "Esgotado" },
   { value: "CLOSED", label: "Encerrado (turma já aconteceu)" },
+];
+
+const SALE_MODE_OPTIONS: { value: CourseSaleMode; label: string }[] = [
+  { value: "checkout", label: "Matrícula online (Mercado Pago)" },
+  { value: "lead", label: "Somente captar interesse (sem venda)" },
 ];
 
 export default function CourseShowPage({ params }: { params: { courseId: string } }) {
@@ -117,6 +122,19 @@ export default function CourseShowPage({ params }: { params: { courseId: string 
             </SelectTrigger>
             <SelectContent>
               {STATUS_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={course.saleMode} onValueChange={(value: CourseSaleMode) => updateCourse.mutate({ saleMode: value })}>
+            <SelectTrigger className="w-64">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SALE_MODE_OPTIONS.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
