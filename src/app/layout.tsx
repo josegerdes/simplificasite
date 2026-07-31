@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Poppins } from "next/font/google";
 
 import { Providers } from "@/app/providers";
@@ -17,7 +17,9 @@ export const metadata: Metadata = {
   },
   description:
     "Especializações e cursos presenciais de odontologia com prática clínica em pacientes reais. Garanta sua vaga pagando só a matrícula — vagas limitadas.",
-  icons: { icon: "/logo.png" },
+  // O favicon/apple-icon são gerados por src/app/icon.tsx e apple-icon.tsx (convenção do
+  // Next.js) — não precisa (e não deve) declarar `icons` aqui, senão duplica a tag no <head>.
+  manifest: "/manifest.webmanifest",
   openGraph: {
     type: "website",
     locale: "pt_BR",
@@ -26,6 +28,11 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "hsl(176, 58%, 45%)",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

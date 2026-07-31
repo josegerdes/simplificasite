@@ -21,8 +21,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const db = await connectDB();
   try {
     const course = await coursesService.getPublicCourseBySlug(db, params.slug);
-    const title =
-      course.saleMode === "lead" ? `${course.name} | Simplifica Doctor` : `${course.name} — Matrícula por R$${course.price.toFixed(0)}`;
+    // O root layout já aplica o template "%s | Simplifica Doctor" — não repetir a marca aqui,
+    // senão o título final sai duplicado ("... | Simplifica Doctor | Simplifica Doctor").
+    const title = course.saleMode === "lead" ? course.name : `${course.name} — Matrícula por R$${course.price.toFixed(0)}`;
     return {
       title,
       description: course.shortDescription,
