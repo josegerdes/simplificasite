@@ -150,7 +150,7 @@ export async function createCourse(db: Db, input: CreateCourseInput) {
     name: input.name,
     modality: input.modality,
     status: "DRAFT",
-    saleMode: "checkout",
+    saleMode: "lead",
     shortDescription: input.shortDescription,
     longDescription: input.longDescription,
     highlights: input.highlights,

@@ -71,7 +71,7 @@ export default function ContactPage() {
           </div>
         ) : (
           <Form {...form}>
-            <form className="mt-8 space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
+            <form className="mt-8 space-y-5 [&_label]:text-white/90" onSubmit={form.handleSubmit(onSubmit)}>
               <FormField
                 control={form.control}
                 name="category"

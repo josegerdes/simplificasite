@@ -123,7 +123,7 @@ export default function PacienteModeloPage() {
             </div>
           ) : (
             <Form {...form}>
-              <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+              <form className="space-y-4 [&_label]:text-white/90" onSubmit={form.handleSubmit(onSubmit)}>
                 <h2 className="font-heading text-lg font-semibold text-white">Quero ser paciente modelo</h2>
                 <FormField
                   control={form.control}

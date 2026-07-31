@@ -303,7 +303,7 @@ export async function seedSiteContent(db: Db): Promise<void> {
     name: course.name,
     modality: "PRESENCIAL",
     status: "PUBLISHED",
-    saleMode: "checkout",
+    saleMode: "lead",
     shortDescription: course.shortDescription,
     longDescription: course.longDescription,
     highlights: course.highlights,
@@ -388,10 +388,11 @@ export async function backfillCourseEmentas(db: Db): Promise<void> {
     .updateMany({ ementaPublished: { $ne: true } }, { $set: { ementaPublished: true, updatedAt: now } });
 
   // Cursos criados antes do modo de venda existir não têm `saleMode` — sem isso, o front
-  // não sabe se deve mostrar o checkout do Mercado Pago ou o formulário de lead.
+  // não sabe se deve mostrar o checkout do Mercado Pago ou o formulário de lead. Default é
+  // "lead" (sem venda direta) — o admin liga o checkout por curso quando quiser vender online.
   const saleModeResult = await collections
     .courses(db)
-    .updateMany({ saleMode: { $exists: false } }, { $set: { saleMode: "checkout", updatedAt: now } });
+    .updateMany({ saleMode: { $exists: false } }, { $set: { saleMode: "lead", updatedAt: now } });
 
   if (createdEmentas > 0 || publishResult.modifiedCount > 0 || saleModeResult.modifiedCount > 0) {
     console.log(

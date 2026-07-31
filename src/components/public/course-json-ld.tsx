@@ -7,6 +7,7 @@ interface VisitorCourse {
   location: string | null;
   price: number;
   soldOut: boolean;
+  saleMode: "checkout" | "lead";
 }
 
 /** Dados estruturados (schema.org/Course) — ajuda o Google a mostrar preço, modalidade e
@@ -32,14 +33,21 @@ export function CourseJsonLd({ course, brandName }: { course: VisitorCourse; bra
       courseWorkload: `PT${course.workloadHours}H`,
       ...(course.location ? { location: { "@type": "Place", name: course.location } } : {}),
     },
-    offers: {
-      "@type": "Offer",
-      category: "Matrícula",
-      price: course.price,
-      priceCurrency: "BRL",
-      availability: course.soldOut ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
-      url: `${siteUrl}/cursos/${course.slug}`,
-    },
+    // Só declara oferta com preço/disponibilidade compráveis quando o curso realmente vende
+    // online — em modo "lead" não existe um preço fechado pra cobrar direto no site, e marcar
+    // como Offer induziria o Google a mostrar preço/"em estoque" pra algo que não dá pra comprar.
+    ...(course.saleMode === "checkout"
+      ? {
+          offers: {
+            "@type": "Offer",
+            category: "Matrícula",
+            price: course.price,
+            priceCurrency: "BRL",
+            availability: course.soldOut ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
+            url: `${siteUrl}/cursos/${course.slug}`,
+          },
+        }
+      : {}),
   };
 
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />;

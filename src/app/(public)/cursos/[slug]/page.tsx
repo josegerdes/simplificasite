@@ -21,7 +21,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const db = await connectDB();
   try {
     const course = await coursesService.getPublicCourseBySlug(db, params.slug);
-    const title = `${course.name} — Matrícula por R$${course.price.toFixed(0)}`;
+    const title =
+      course.saleMode === "lead" ? `${course.name} | Simplifica Doctor` : `${course.name} — Matrícula por R$${course.price.toFixed(0)}`;
     return {
       title,
       description: course.shortDescription,
