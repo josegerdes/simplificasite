@@ -23,10 +23,6 @@ services:
       - mongo
     ports:
       - "${PORT:-3000}:${PORT:-3000}"
-    volumes:
-      # Sem isso, toda imagem enviada pelo admin (logo, banner, capa de curso) some no
-      # próximo deploy — a imagem Docker é reconstruída do zero a cada `docker compose up --build`.
-      - uploads-data:/app/public/uploads
     environment:
       PORT: ${PORT:-3000}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
@@ -46,4 +42,3 @@ services:
 
 volumes:
   mongo-data:
-  uploads-data:

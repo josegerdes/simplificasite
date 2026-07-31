@@ -1,23 +1,13 @@
-import { randomUUID } from "crypto";
-import path from "path";
-import { mkdir, writeFile } from "fs/promises";
-
 import { NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
 
+import { connectDB } from "@/server/db/client";
+import { collections } from "@/server/db/collections";
 import { withApiHandler } from "@/server/http/with-api-handler";
 import { ApiError } from "@/server/auth/guards";
 
-// Fora de `public/` no repo (fica só no volume Docker em runtime) — ver nota no
-// docker-compose.yml sobre por que isso precisa de volume próprio, separado do
-// `public/` que já vem embutido na imagem pelo build.
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;
-const ALLOWED_TYPES: Record<string, string> = {
-  "image/jpeg": ".jpg",
-  "image/png": ".png",
-  "image/webp": ".webp",
-  "image/gif": ".gif",
-};
+const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 /** O `file.type` do multipart vem do navegador/cliente — fácil de forjar (ex: um .html
  *  renomeado com Content-Type "image/png"). Confere os primeiros bytes reais do arquivo
@@ -38,7 +28,9 @@ function matchesImageSignature(buffer: Buffer, mimeType: string): boolean {
 }
 
 /** Só exige estar autenticado — quem pode USAR a imagem enviada (trocar a capa de um
- *  curso, o logo, o banner) já é controlado pela permissão da tela que salva a URL. */
+ *  curso, o logo, o banner) já é controlado pela permissão da tela que salva a URL.
+ *  Fica salva no Mongo (não no filesystem do container) — serve via GET /api/uploads/[id],
+ *  sem depender de volume Docker persistente configurado certo em produção. */
 export const POST = withApiHandler(async (request) => {
   const formData = await request.formData();
   const file = formData.get("file");
@@ -46,8 +38,7 @@ export const POST = withApiHandler(async (request) => {
   if (!(file instanceof File)) {
     throw new ApiError(422, "Nenhum arquivo enviado");
   }
-  const extension = ALLOWED_TYPES[file.type];
-  if (!extension) {
+  if (!ALLOWED_TYPES.has(file.type)) {
     throw new ApiError(422, "Formato não suportado — envie JPG, PNG, WEBP ou GIF");
   }
   if (file.size > MAX_SIZE_BYTES) {
@@ -59,9 +50,9 @@ export const POST = withApiHandler(async (request) => {
     throw new ApiError(422, "O arquivo não é uma imagem válida desse formato");
   }
 
-  await mkdir(UPLOAD_DIR, { recursive: true });
-  const fileName = `${randomUUID()}${extension}`;
-  await writeFile(path.join(UPLOAD_DIR, fileName), buffer);
+  const db = await connectDB();
+  const image = { _id: new ObjectId(), contentType: file.type, data: buffer, createdAt: new Date() };
+  await collections.uploadedImages(db).insertOne(image);
 
-  return NextResponse.json({ url: `/uploads/${fileName}` }, { status: 201 });
+  return NextResponse.json({ url: `/api/uploads/${image._id.toHexString()}` }, { status: 201 });
 });

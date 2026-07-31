@@ -28,9 +28,5 @@ next-env.d.ts
 # docker
 mongo-data/
 
-# uploads de imagem (runtime — persistidos via volume Docker, não fazem parte do repo)
-/public/uploads/*
-!/public/uploads/.gitkeep
-
 # tooling local do assistente
 /.claude/

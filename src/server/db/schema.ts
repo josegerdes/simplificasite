@@ -299,3 +299,15 @@ export interface ContactMessageDoc {
   createdAt: Date;
   updatedAt: Date;
 }
+
+/** Imagens enviadas pelo admin (logo, banners, capa de curso, foto de unidade) ficam salvas
+ *  direto no Mongo — não no filesystem do container. Isso evita depender de volume Docker
+ *  persistente configurado corretamente em produção (fonte de bug real: se o volume não
+ *  monta certo, o upload "funciona" mas some no próximo deploy, ou nem persiste entre
+ *  requests se houver mais de uma réplica do container). */
+export interface UploadedImageDoc {
+  _id: ObjectId;
+  contentType: string;
+  data: Buffer;
+  createdAt: Date;
+}

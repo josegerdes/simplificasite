@@ -9,6 +9,7 @@ import type {
   RoleDoc,
   SellerDoc,
   SiteConfigDoc,
+  UploadedImageDoc,
   UserDoc,
 } from "@/server/db/schema";
 
@@ -27,4 +28,5 @@ export const collections = {
   aiConversations: (db: Db) => db.collection<AiConversationDoc>("aiConversations"),
   contactMessages: (db: Db) => db.collection<ContactMessageDoc>("contactMessages"),
   abandonedCarts: (db: Db) => db.collection<AbandonedCartDoc>("abandonedCarts"),
+  uploadedImages: (db: Db) => db.collection<UploadedImageDoc>("uploadedImages"),
 };

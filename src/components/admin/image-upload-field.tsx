@@ -39,8 +39,14 @@ export function ImageUploadField({
         throw new Error(data.message ?? "Falha ao enviar imagem");
       }
       const data: UploadResponse = await response.json();
+      const previousUrl = value;
       onChange(data.url);
       toast.success("Imagem enviada");
+      // Best-effort: apaga a imagem anterior pra não acumular arquivo órfão a cada troca —
+      // só some imagem que a gente mesmo hospeda (/api/uploads/...), nunca uma URL externa.
+      if (previousUrl?.startsWith("/api/uploads/")) {
+        fetch(previousUrl, { method: "DELETE" }).catch(() => {});
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Falha ao enviar imagem");
     } finally {
