@@ -100,7 +100,14 @@ export default function AiAgentConfigPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Instruções extras (tom de voz, regras específicas de venda)</Label>
+            <Label>Instruções gerais (valem para TODOS os vendedores)</Label>
+            <div className="rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground">
+              Use aqui o que deve ser <span className="font-medium text-foreground">igual pra todo mundo</span>, não importa
+              com qual vendedor o visitante fale — política de desconto, o que nunca prometer, regras de compliance, um
+              padrão de tom da marca. <span className="font-medium text-foreground">Exemplos:</span> &quot;nunca ofereça
+              desconto além do que está configurado no curso&quot;, &quot;sempre reforce que a vaga só é garantida após o
+              pagamento&quot;, &quot;use no máximo 1 emoji por mensagem&quot;.
+            </div>
             <Textarea
               rows={6}
               placeholder="Ex: seja direto, sempre pergunte se a pessoa já é dentista formada, ofereça a matrícula assim que perceber interesse..."
@@ -146,6 +153,14 @@ export default function AiAgentConfigPage() {
           </Button>
         </CardHeader>
         <CardContent className="space-y-3">
+          <div className="rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground">
+            Use a instrução de cada vendedor pro que <span className="font-medium text-foreground">torna ELE diferente
+            dos outros</span> — especialidade/área de foco, personalidade, um jeito de falar específico. Não repita
+            aqui o que já vale pra geral (isso vai na caixa acima). <span className="font-medium text-foreground">Exemplos:</span>{" "}
+            &quot;especialista em Harmonização Orofacial, aprofunde nessa área quando o assunto render&quot;, &quot;tom mais
+            jovem e descontraído, pode usar gírias&quot;, &quot;foco em pacientes que já são dentistas formados,
+            fale de forma mais técnica&quot;.
+          </div>
           {form.personas.length === 0 && (
             <p className="text-sm text-muted-foreground">
               Nenhum vendedor cadastrado — adicione pelo menos um pra o chat funcionar.
