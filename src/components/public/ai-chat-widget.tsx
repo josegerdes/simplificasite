@@ -163,8 +163,8 @@ export function AiChatWidget({ brandName, personas }: { brandName: string; perso
       {
         role: "assistant",
         content: info.interest
-          ? `Oi, ${firstName}! 👋 Sou o ${persona.name}, consultor da ${brandName}. Vi que seu interesse é em "${info.interest}" — já vou te mostrar as melhores opções!`
-          : `Oi, ${firstName}! 👋 Sou o ${persona.name}, consultor da ${brandName}. Me conta, o que você está buscando?`,
+          ? `Oi, ${firstName}! 👋 Sou o ${persona.name}, consultor da ${brandName}. Vi que seu interesse é em "${info.interest}" — como posso te ajudar com isso?`
+          : `Oi, ${firstName}! 👋 Sou o ${persona.name}, consultor da ${brandName}. Como posso te ajudar?`,
       },
     ]);
   }
