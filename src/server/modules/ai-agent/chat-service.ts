@@ -5,7 +5,8 @@ import { ApiError } from "@/server/auth/guards";
 import { collections } from "@/server/db/collections";
 import { buildSystemPrompt, getAiModel, isAiAgentEnabled, resolvePersona } from "@/server/modules/ai-agent/context-builder";
 import { getOrCreateSiteConfig } from "@/server/modules/site-config/repository";
-import { ChatRequestInput } from "@/server/modules/ai-agent/types";
+import * as externalLeadsService from "@/server/modules/external-leads/service";
+import { ChatLeadInfo, ChatRequestInput } from "@/server/modules/ai-agent/types";
 
 function getClient(): OpenAI {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -25,7 +26,7 @@ export async function streamChatReply(db: Db, input: ChatRequestInput): Promise<
 
   const client = getClient();
   const [systemPrompt, model, config] = await Promise.all([
-    buildSystemPrompt(db, input.personaId),
+    buildSystemPrompt(db, input.personaId, input.leadInfo),
     getAiModel(db),
     getOrCreateSiteConfig(db),
   ]);
@@ -107,5 +108,43 @@ export async function markConversationConverted(db: Db, sessionId: string, cours
   await collections.aiConversations(db).updateOne(
     { sessionId },
     { $set: { converted: true, convertedAt: new Date(), convertedCourseSlug: courseSlug } }
+  );
+}
+
+/**
+ * Chamado assim que o visitante preenche nome/whatsapp/interesse ANTES do chat começar de
+ * verdade — manda o lead pro CRM externo na hora (mesmo que a pessoa feche o chat sem trocar
+ * nenhuma mensagem, o lead já foi capturado) e deixa a conversa pré-criada com esses dados,
+ * pra aparecer certo na tela de conversas do admin desde o início.
+ */
+export async function registerChatLead(
+  db: Db,
+  sessionId: string,
+  personaId: string | null,
+  leadInfo: ChatLeadInfo
+): Promise<void> {
+  const config = await getOrCreateSiteConfig(db);
+  const persona = resolvePersona(config.aiAgent.personas, personaId);
+
+  await externalLeadsService.submitExternalLead(
+    { name: leadInfo.name, whatsapp: leadInfo.whatsapp, email: null, interest: leadInfo.interest },
+    { leadType: "student", originLabel: "Simplifica Doctor - Site (Chat IA)" }
+  );
+
+  const now = new Date();
+  await collections.aiConversations(db).updateOne(
+    { sessionId },
+    {
+      $set: { leadName: leadInfo.name, leadContact: leadInfo.whatsapp, personaId: persona.id, personaName: persona.name, updatedAt: now },
+      $setOnInsert: {
+        courseId: null,
+        messages: [],
+        converted: false,
+        convertedAt: null,
+        convertedCourseSlug: null,
+        createdAt: now,
+      },
+    },
+    { upsert: true }
   );
 }

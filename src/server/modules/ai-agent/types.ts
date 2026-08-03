@@ -5,9 +5,17 @@ export const chatMessageSchema = z.object({
   content: z.string().min(1).max(4000),
 });
 
+export const chatLeadInfoSchema = z.object({
+  name: z.string().min(2).max(200),
+  whatsapp: z.string().min(8).max(30),
+  interest: z.string().max(200).nullable().default(null),
+});
+export type ChatLeadInfo = z.infer<typeof chatLeadInfoSchema>;
+
 export const chatRequestSchema = z.object({
   sessionId: z.string().min(1).max(100),
   personaId: z.string().min(1).max(100).nullable().default(null),
+  leadInfo: chatLeadInfoSchema.nullable().default(null),
   messages: z.array(chatMessageSchema).min(1).max(30),
 });
 export type ChatRequestInput = z.infer<typeof chatRequestSchema>;

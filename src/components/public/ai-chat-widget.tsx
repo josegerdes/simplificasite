@@ -18,6 +18,12 @@ interface Persona {
   name: string;
 }
 
+interface LeadInfo {
+  name: string;
+  whatsapp: string;
+  interest: string;
+}
+
 function getSessionId(): string {
   const key = "sdv_chat_session";
   let id = typeof window !== "undefined" ? window.localStorage.getItem(key) : null;
@@ -61,6 +67,9 @@ export function AiChatWidget({ brandName, personas }: { brandName: string; perso
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [persona, setPersona] = useState<Persona | null>(null);
+  const [leadInfo, setLeadInfo] = useState<LeadInfo | null>(null);
+  const [qualifyForm, setQualifyForm] = useState({ name: "", whatsapp: "", interest: "" });
+  const [qualifySubmitting, setQualifySubmitting] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -75,15 +84,51 @@ export function AiChatWidget({ brandName, personas }: { brandName: string; perso
 
   function choosePersona(p: Persona) {
     setPersona(p);
-    setMessages([
-      { role: "assistant", content: `Oi! 👋 Sou o ${p.name}, consultor da ${brandName}. Quer ajuda para escolher um curso ou já sabe qual quer garantir sua vaga?` },
-    ]);
   }
 
   function backToRoster() {
     setPersona(null);
+    setLeadInfo(null);
+    setQualifyForm({ name: "", whatsapp: "", interest: "" });
     setMessages([]);
     setInput("");
+  }
+
+  async function submitQualifyForm() {
+    const name = qualifyForm.name.trim();
+    const whatsapp = qualifyForm.whatsapp.trim();
+    if (!name || whatsapp.length < 8 || !persona || qualifySubmitting) return;
+
+    setQualifySubmitting(true);
+    const info: LeadInfo = { name, whatsapp, interest: qualifyForm.interest.trim() };
+    try {
+      // Manda o lead pro CRM externo JÁ — mesmo que a pessoa feche o chat sem mandar
+      // nenhuma mensagem, esse contato já foi capturado.
+      await fetch("/api/public/ai-chat/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: getSessionId(),
+          personaId: persona.id,
+          leadInfo: { name: info.name, whatsapp: info.whatsapp, interest: info.interest || null },
+        }),
+      });
+    } catch {
+      // best-effort — não trava o chat se o envio do lead falhar
+    } finally {
+      setQualifySubmitting(false);
+    }
+
+    setLeadInfo(info);
+    const firstName = name.split(" ")[0];
+    setMessages([
+      {
+        role: "assistant",
+        content: info.interest
+          ? `Oi, ${firstName}! 👋 Sou o ${persona.name}, consultor da ${brandName}. Vi que seu interesse é em "${info.interest}" — já vou te mostrar as melhores opções!`
+          : `Oi, ${firstName}! 👋 Sou o ${persona.name}, consultor da ${brandName}. Me conta, o que você está buscando?`,
+      },
+    ]);
   }
 
   function handleCourseClick(slug: string) {
@@ -109,7 +154,12 @@ export function AiChatWidget({ brandName, personas }: { brandName: string; perso
       const response = await fetch("/api/public/ai-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId: getSessionId(), personaId: persona.id, messages: nextMessages }),
+        body: JSON.stringify({
+          sessionId: getSessionId(),
+          personaId: persona.id,
+          leadInfo: leadInfo ? { name: leadInfo.name, whatsapp: leadInfo.whatsapp, interest: leadInfo.interest || null } : null,
+          messages: nextMessages,
+        }),
       });
 
       if (!response.ok || !response.body) {
@@ -178,6 +228,54 @@ export function AiChatWidget({ brandName, personas }: { brandName: string; perso
               >
                 Fechar
               </button>
+            </>
+          ) : !leadInfo ? (
+            <>
+              <div className="flex items-center gap-2.5 bg-[#25d366] px-4 py-3 text-white">
+                <button onClick={backToRoster} aria-label="Voltar" className="rounded-full p-0.5 hover:bg-white/10">
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <div className="leading-tight">
+                  <p className="font-heading text-sm font-semibold">Antes de começar</p>
+                  <p className="text-xs text-white/80">Falando com {persona.name}</p>
+                </div>
+              </div>
+              <div className="flex-1 space-y-3 overflow-y-auto p-4">
+                <p className="text-sm text-white/70">
+                  Me conta rapidinho seu nome, WhatsApp e o que você busca — isso ajuda a gente a já começar a
+                  conversa entendendo o que você precisa, sem enrolação.
+                </p>
+                <div className="space-y-2.5">
+                  <input
+                    value={qualifyForm.name}
+                    onChange={(e) => setQualifyForm({ ...qualifyForm, name: e.target.value })}
+                    placeholder="Seu nome"
+                    className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-[#25d366]"
+                  />
+                  <input
+                    value={qualifyForm.whatsapp}
+                    onChange={(e) => setQualifyForm({ ...qualifyForm, whatsapp: e.target.value })}
+                    placeholder="Seu WhatsApp"
+                    inputMode="tel"
+                    className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-[#25d366]"
+                  />
+                  <input
+                    value={qualifyForm.interest}
+                    onChange={(e) => setQualifyForm({ ...qualifyForm, interest: e.target.value })}
+                    placeholder="O que você busca? (opcional)"
+                    onKeyDown={(e) => e.key === "Enter" && submitQualifyForm()}
+                    className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-[#25d366]"
+                  />
+                </div>
+                <Button
+                  onClick={submitQualifyForm}
+                  loading={qualifySubmitting}
+                  disabled={!qualifyForm.name.trim() || qualifyForm.whatsapp.trim().length < 8}
+                  className="w-full bg-[#25d366] text-white hover:bg-[#25d366]/90"
+                >
+                  Começar conversa
+                </Button>
+              </div>
             </>
           ) : (
             <>

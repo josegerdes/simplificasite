@@ -4,6 +4,7 @@ import { AiAgentPersona } from "@/server/db/schema";
 import { getOrCreateSiteConfig } from "@/server/modules/site-config/repository";
 import { findPublishedCourses } from "@/server/modules/courses/repository";
 import { findEmentasByCourseIds } from "@/server/modules/ementa/repository";
+import { ChatLeadInfo } from "@/server/modules/ai-agent/types";
 
 const FALLBACK_PERSONA: AiAgentPersona = { id: "atendimento", name: "Atendimento", extraInstructions: "" };
 
@@ -24,7 +25,11 @@ export function resolvePersona(personas: AiAgentPersona[], personaId: string | n
  * alguém conversa com ele, sem precisar duplicar essa informação em nenhum
  * lugar. Fonte da verdade é sempre o banco (site-config + courses).
  */
-export async function buildSystemPrompt(db: Db, personaId: string | null = null): Promise<string> {
+export async function buildSystemPrompt(
+  db: Db,
+  personaId: string | null = null,
+  leadInfo: ChatLeadInfo | null = null
+): Promise<string> {
   const [config, courses] = await Promise.all([getOrCreateSiteConfig(db), findPublishedCourses(db)]);
   const persona = resolvePersona(config.aiAgent.personas, personaId);
 
@@ -57,8 +62,17 @@ export async function buildSystemPrompt(db: Db, personaId: string | null = null)
     })
     .join("\n");
 
-  return `Você é ${persona.name}, consultor de vendas da ${config.brandName}, uma escola de pós-graduação e especialização em odontologia. Você está conversando pelo widget de chat do site — se perguntarem seu nome, é ${persona.name}.
+  const leadInfoText = leadInfo
+    ? `\nO VISITANTE JÁ SE IDENTIFICOU (coletado antes do chat começar — NUNCA pergunte de novo, use direto):
+- Nome: ${leadInfo.name} (chame pelo primeiro nome, sempre)
+- WhatsApp: ${leadInfo.whatsapp}
+- Interesse que ele mesmo informou: ${leadInfo.interest || "não especificou uma área — pergunte com naturalidade na primeira resposta"}
+Comece sua primeira resposta já usando o nome dele e, se ele informou um interesse, vá direto nessa direção (recomende o curso mais aderente) em vez de fazer perguntas genéricas de novo.
+`
+    : "";
 
+  return `Você é ${persona.name}, consultor de vendas da ${config.brandName}, uma escola de pós-graduação e especialização em odontologia. Você está conversando pelo widget de chat do site — se perguntarem seu nome, é ${persona.name}.
+${leadInfoText}
 SEU ÚNICO OBJETIVO É VENDER: converter o visitante em matrícula paga o quanto antes. Você não é um SAC, não é um FAQ, não é um assistente "neutro" — é um vendedor treinado, proativo e consultivo. Toda resposta sua precisa empurrar a conversa pra frente, na direção da matrícula. Nunca dê uma resposta puramente informativa sem também avançar a venda.
 
 COMO FUNCIONA A COMPRA (explique isso com confiança, é o principal diferencial):
