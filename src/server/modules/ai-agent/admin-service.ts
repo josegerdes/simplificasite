@@ -42,3 +42,8 @@ export async function getConversation(db: Db, id: string) {
   if (!conversation) throw new ApiError(404, "Conversa não encontrada");
   return toPublicConversation(conversation);
 }
+
+export async function deleteConversation(db: Db, id: string) {
+  const result = await collections.aiConversations(db).deleteOne({ _id: ObjectId.createFromHexString(id) });
+  if (result.deletedCount === 0) throw new ApiError(404, "Conversa não encontrada");
+}

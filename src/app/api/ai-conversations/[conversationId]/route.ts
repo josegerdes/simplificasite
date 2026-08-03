@@ -12,3 +12,12 @@ export const GET = withApiHandler<{ params: { conversationId: string } }>(
   },
   { permission: "site-config.manage" }
 );
+
+export const DELETE = withApiHandler<{ params: { conversationId: string } }>(
+  async (_request, { params }) => {
+    const db = await connectDB();
+    await aiAdminService.deleteConversation(db, params.conversationId);
+    return NextResponse.json({ ok: true });
+  },
+  { permission: "site-config.manage" }
+);

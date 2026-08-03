@@ -1,10 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Bot, CheckCircle2, User } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Bot, CheckCircle2, Trash2, User } from "lucide-react";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -33,6 +46,7 @@ interface ConversationDetail {
 }
 
 export default function AiConversationsPage() {
+  const queryClient = useQueryClient();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { data: conversations, isLoading } = useQuery<ConversationSummary[]>({
@@ -44,6 +58,16 @@ export default function AiConversationsPage() {
     queryKey: ["ai-conversations", selectedId],
     queryFn: () => apiFetch(`/api/ai-conversations/${selectedId}`),
     enabled: Boolean(selectedId),
+  });
+
+  const deleteConversation = useMutation({
+    mutationFn: (id: string) => apiFetch(`/api/ai-conversations/${id}`, { method: "DELETE" }),
+    onSuccess: (_data, id) => {
+      toast.success("Conversa excluída");
+      queryClient.invalidateQueries({ queryKey: ["ai-conversations"] });
+      if (selectedId === id) setSelectedId(null);
+    },
+    onError: (error: Error) => toast.error(error.message),
   });
 
   return (
@@ -62,20 +86,21 @@ export default function AiConversationsPage() {
               <TableHead>Mensagens</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Última atividade</TableHead>
+              <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading &&
               Array.from({ length: 3 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell colSpan={5}>
+                  <TableCell colSpan={6}>
                     <Skeleton className="h-6 w-full" />
                   </TableCell>
                 </TableRow>
               ))}
             {!isLoading && conversations?.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
                   Nenhuma conversa registrada ainda
                 </TableCell>
               </TableRow>
@@ -96,6 +121,28 @@ export default function AiConversationsPage() {
                   )}
                 </TableCell>
                 <TableCell>{new Date(conversation.updatedAt).toLocaleString("pt-BR")}</TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir esta conversa?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Essa ação não pode ser desfeita — o histórico de mensagens com {conversation.personaName ?? "o vendedor"} vai
+                          ser apagado permanentemente.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteConversation.mutate(conversation.id)}>Excluir</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -105,11 +152,34 @@ export default function AiConversationsPage() {
       <Sheet open={Boolean(selectedId)} onOpenChange={(open) => !open && setSelectedId(null)}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
           <SheetHeader>
-            <SheetTitle>Conversa com {detail?.personaName ?? "—"}</SheetTitle>
-            <SheetDescription>
-              {detail && new Date(detail.createdAt).toLocaleString("pt-BR")}
-              {detail?.converted && ` · Convertido${detail.convertedCourseSlug ? ` (${detail.convertedCourseSlug})` : ""}`}
-            </SheetDescription>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <SheetTitle>Conversa com {detail?.personaName ?? "—"}</SheetTitle>
+                <SheetDescription>
+                  {detail && new Date(detail.createdAt).toLocaleString("pt-BR")}
+                  {detail?.converted && ` · Convertido${detail.convertedCourseSlug ? ` (${detail.convertedCourseSlug})` : ""}`}
+                </SheetDescription>
+              </div>
+              {detail && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="icon" className="shrink-0 text-destructive hover:text-destructive">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Excluir esta conversa?</AlertDialogTitle>
+                      <AlertDialogDescription>Essa ação não pode ser desfeita.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => deleteConversation.mutate(detail.id)}>Excluir</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
           </SheetHeader>
           <div className="mt-4 space-y-3">
             {detail?.messages.map((message, index) => (
