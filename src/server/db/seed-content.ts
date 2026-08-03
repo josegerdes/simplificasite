@@ -290,7 +290,12 @@ export async function seedSiteContent(db: Db): Promise<void> {
           enabled: false,
           events: { pageView: true, viewContent: true, initiateCheckout: true, purchase: true },
         },
-        aiAgent: { enabled: false, model: "gpt-4o-mini", extraInstructions: "" },
+        aiAgent: {
+          enabled: false,
+          model: "gpt-4o-mini",
+          extraInstructions: "",
+          personas: [{ id: randomUUID(), name: "Pedro Lemos", extraInstructions: "" }],
+        },
         salesTools: { defaultSeatsLimit: 40, urgencyBannerEnabled: true, urgencyBannerText: "Vagas limitadas — garanta a sua matrícula agora" },
       },
     },

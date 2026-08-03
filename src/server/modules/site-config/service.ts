@@ -40,6 +40,8 @@ export function toPublicSiteConfig(config: SiteConfigDoc) {
       ? { pixelId: config.pixel.pixelId, testEventCode: config.pixel.testEventCode, events: config.pixel.events }
       : null,
     aiAgentEnabled: config.aiAgent.enabled,
+    // Só nome/id — instruções de cada persona são detalhe interno do prompt, nunca vão pro client.
+    aiAgentPersonas: config.aiAgent.personas.map((p) => ({ id: p.id, name: p.name })),
     salesTools: config.salesTools,
   };
 }

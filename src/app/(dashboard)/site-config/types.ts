@@ -19,6 +19,12 @@ export interface SiteConfigSocialLinks {
   youtube: string | null;
 }
 
+export interface AiAgentPersona {
+  id: string;
+  name: string;
+  extraInstructions: string;
+}
+
 export interface SiteConfigAdmin {
   brandName: string;
   logoUrl: string;
@@ -36,6 +42,6 @@ export interface SiteConfigAdmin {
     enabled: boolean;
     events: { pageView: boolean; viewContent: boolean; initiateCheckout: boolean; purchase: boolean };
   };
-  aiAgent: { enabled: boolean; model: string; extraInstructions: string };
+  aiAgent: { enabled: boolean; model: string; extraInstructions: string; personas: AiAgentPersona[] };
   salesTools: { defaultSeatsLimit: number | null; urgencyBannerEnabled: boolean; urgencyBannerText: string };
 }

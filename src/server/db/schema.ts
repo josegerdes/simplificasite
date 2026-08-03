@@ -214,10 +214,20 @@ export interface SiteConfigPixelSettings {
   };
 }
 
+/** Um "vendedor" que aparece no widget do chat — todos rodam o mesmo motor (OpenAI), só
+ *  mudam de nome e instruções extras, pro visitante poder escolher com quem falar mesmo
+ *  sendo tudo IA por trás. */
+export interface AiAgentPersona {
+  id: string;
+  name: string;
+  extraInstructions: string;
+}
+
 export interface SiteConfigAiAgentSettings {
   enabled: boolean;
   model: string;
   extraInstructions: string;
+  personas: AiAgentPersona[];
 }
 
 export interface SiteConfigSalesToolsDefaults {
@@ -278,9 +288,16 @@ export interface AiConversationDoc {
   _id: ObjectId;
   sessionId: string;
   courseId: ObjectId | null;
+  personaId: string | null;
+  personaName: string | null;
   messages: AiConversationMessage[];
   leadName: string | null;
   leadContact: string | null;
+  /** true assim que o visitante clica num link de curso enviado pela IA no chat —
+   *  sinal de intenção forte, mostrado pro admin na lista de conversas. */
+  converted: boolean;
+  convertedAt: Date | null;
+  convertedCourseSlug: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

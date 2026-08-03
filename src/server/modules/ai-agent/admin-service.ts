@@ -8,7 +8,10 @@ function toPublicConversation(conversation: AiConversationDoc) {
   return {
     id: conversation._id.toHexString(),
     sessionId: conversation.sessionId,
+    personaName: conversation.personaName,
     messages: conversation.messages,
+    converted: conversation.converted,
+    convertedCourseSlug: conversation.convertedCourseSlug,
     createdAt: conversation.createdAt,
     updatedAt: conversation.updatedAt,
   };
@@ -24,8 +27,11 @@ export async function listConversations(db: Db) {
   return conversations.map((conversation) => ({
     id: conversation._id.toHexString(),
     sessionId: conversation.sessionId,
+    personaName: conversation.personaName,
     messageCount: conversation.messages.length,
     firstMessage: conversation.messages[0]?.content ?? "",
+    converted: conversation.converted,
+    convertedCourseSlug: conversation.convertedCourseSlug,
     createdAt: conversation.createdAt,
     updatedAt: conversation.updatedAt,
   }));

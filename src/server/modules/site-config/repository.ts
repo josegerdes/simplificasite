@@ -38,6 +38,7 @@ const DEFAULT_CONFIG: Omit<SiteConfigDoc, "_id"> = {
     enabled: false,
     model: "gpt-4o-mini",
     extraInstructions: "",
+    personas: [{ id: "pedro-lemos", name: "Pedro Lemos", extraInstructions: "" }],
   },
   salesTools: {
     defaultSeatsLimit: 40,
@@ -59,6 +60,11 @@ export async function getOrCreateSiteConfig(db: Db): Promise<SiteConfigDoc> {
       if (existing[key] === undefined) {
         (missing as Record<string, unknown>)[key] = DEFAULT_CONFIG[key];
       }
+    }
+    // `aiAgent` já existia antes de `personas` ser adicionado — o objeto em si não está
+    // `undefined` (não cai no loop acima), então precisa de um check dedicado aqui.
+    if (existing.aiAgent && existing.aiAgent.personas === undefined) {
+      (missing as Record<string, unknown>).aiAgent = { ...existing.aiAgent, personas: DEFAULT_CONFIG.aiAgent.personas };
     }
     if (Object.keys(missing).length === 0) return existing;
 

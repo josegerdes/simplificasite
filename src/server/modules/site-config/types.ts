@@ -12,10 +12,17 @@ const pixelSchema = z.object({
   }),
 });
 
+const personaSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1).max(100),
+  extraInstructions: z.string().max(4000),
+});
+
 const aiAgentSchema = z.object({
   enabled: z.boolean(),
   model: z.string().min(1),
   extraInstructions: z.string(),
+  personas: z.array(personaSchema).max(20),
 });
 
 const salesToolsSchema = z.object({

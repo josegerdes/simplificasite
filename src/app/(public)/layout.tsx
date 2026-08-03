@@ -28,7 +28,7 @@ export default async function PublicLayout({ children }: { children: React.React
         socialLinks={config.socialLinks}
         whatsappNumber={config.whatsappNumber}
       />
-      {config.aiAgentEnabled && <AiChatWidget brandName={config.brandName} />}
+      {config.aiAgentEnabled && <AiChatWidget brandName={config.brandName} personas={config.aiAgentPersonas} />}
     </div>
   );
 }

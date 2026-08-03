@@ -22,9 +22,17 @@ export async function GET(request: Request, { params }: { params: { id: string }
   const image = await collections.uploadedImages(db).findOne({ _id: objectId });
   if (!image) return new NextResponse(null, { status: 404 });
 
-  return new NextResponse(new Uint8Array(image.data), {
+  // O driver do Mongo devolve o campo Buffer como um wrapper BSON `Binary`, não um Buffer
+  // puro — `new Uint8Array(binary)` nesse objeto não copia nada e serve uma imagem de 0
+  // bytes (200 OK, Content-Type certo, corpo vazio — bug real que só aparece olhando o
+  // tamanho do arquivo, não só o status). `.buffer` do Binary é o Buffer de verdade.
+  const raw = image.data as unknown as Buffer | { buffer: Buffer };
+  const bytes = Buffer.isBuffer(raw) ? raw : Buffer.from(raw.buffer);
+
+  return new NextResponse(new Uint8Array(bytes), {
     headers: {
       "Content-Type": image.contentType,
+      "Content-Length": String(bytes.length),
       "Cache-Control": "public, max-age=31536000, immutable",
     },
   });

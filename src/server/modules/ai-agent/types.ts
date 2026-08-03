@@ -7,6 +7,7 @@ export const chatMessageSchema = z.object({
 
 export const chatRequestSchema = z.object({
   sessionId: z.string().min(1).max(100),
+  personaId: z.string().min(1).max(100).nullable().default(null),
   messages: z.array(chatMessageSchema).min(1).max(30),
 });
 export type ChatRequestInput = z.infer<typeof chatRequestSchema>;
