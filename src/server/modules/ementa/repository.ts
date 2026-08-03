@@ -7,6 +7,10 @@ export function findEmentaByCourseId(db: Db, courseId: ObjectId) {
   return collections.ementas(db).findOne({ courseId });
 }
 
+export function findEmentasByCourseIds(db: Db, courseIds: ObjectId[]) {
+  return collections.ementas(db).find({ courseId: { $in: courseIds } }).toArray();
+}
+
 export async function upsertEmenta(
   db: Db,
   courseId: ObjectId,

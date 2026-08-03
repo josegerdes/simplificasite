@@ -3,6 +3,7 @@ import { Db } from "mongodb";
 import { AiAgentPersona } from "@/server/db/schema";
 import { getOrCreateSiteConfig } from "@/server/modules/site-config/repository";
 import { findPublishedCourses } from "@/server/modules/courses/repository";
+import { findEmentasByCourseIds } from "@/server/modules/ementa/repository";
 
 const FALLBACK_PERSONA: AiAgentPersona = { id: "atendimento", name: "Atendimento", extraInstructions: "" };
 
@@ -27,6 +28,16 @@ export async function buildSystemPrompt(db: Db, personaId: string | null = null)
   const [config, courses] = await Promise.all([getOrCreateSiteConfig(db), findPublishedCourses(db)]);
   const persona = resolvePersona(config.aiAgent.personas, personaId);
 
+  // Módulos da ementa (só os títulos, não os tópicos de cada um — resumido de propósito,
+  // senão o prompt fica gigante e caro repetindo o programa inteiro de todo curso em toda
+  // mensagem) pra IA conseguir falar com propriedade do conteúdo quando perguntarem
+  // "o que tem no curso", em vez de só saber que "existe uma ementa".
+  const ementas = await findEmentasByCourseIds(
+    db,
+    courses.filter((c) => c.ementaPublished).map((c) => c._id)
+  );
+  const ementaByCourseId = new Map(ementas.map((e) => [e.courseId.toHexString(), e.modules]));
+
   const now = new Date();
   const coursesText = courses
     .map((course) => {
@@ -37,8 +48,12 @@ export async function buildSystemPrompt(db: Db, personaId: string | null = null)
       const priceText = hasActivePromo
         ? `De R$${course.originalPrice!.toFixed(2)} por R$${course.price.toFixed(2)} (matrícula promocional${course.promoDeadline ? ` até ${course.promoDeadline.toLocaleDateString("pt-BR")}` : ""})`
         : `Matrícula: R$${course.price.toFixed(2)}`;
-      const ementaText = course.ementaPublished ? " | Ementa completa e PDF disponíveis na página do curso" : "";
-      return `- ${course.name} (${modality}, /cursos/${course.slug}): ${course.shortDescription} | Carga horária: ${course.workloadHours}h | Início: ${course.startDate ?? "a definir"} | ${seats} | ${priceText}${ementaText}${course.status === "SOLD_OUT" ? " — ESGOTADO" : ""}`;
+      const highlightsText = course.highlights.length > 0 ? ` | Destaques: ${course.highlights.join(", ")}` : "";
+      const modules = ementaByCourseId.get(course._id.toHexString());
+      const ementaText = modules?.length
+        ? ` | Ementa (módulos do curso): ${modules.map((m) => m.title).join(", ")} — PDF completo disponível na página do curso`
+        : "";
+      return `- ${course.name} (${modality}, /cursos/${course.slug}): ${course.shortDescription} | Carga horária: ${course.workloadHours}h | Início: ${course.startDate ?? "a definir"} | ${seats} | ${priceText}${highlightsText}${ementaText}${course.status === "SOLD_OUT" ? " — ESGOTADO" : ""}`;
     })
     .join("\n");
 
@@ -67,6 +82,7 @@ GATILHOS DE FECHAMENTO (use sempre que fizer sentido):
 - Vagas limitadas: cite o número real de vagas restantes do curso specific (nunca invente).
 - Preço promocional com prazo, se existir para aquele curso.
 - Simplicidade: "é só a matrícula agora, o processo todo leva menos de 2 minutos".
+- Conteúdo do curso: se perguntarem "o que tem no curso" ou "o que vou aprender", cite 2-3 módulos reais da ementa daquele curso (não invente módulos que não estão listados) — mostra que o curso é completo e ajuda a decidir. Sempre mencione que dá pra baixar a ementa completa em PDF na página do curso.
 - SEMPRE termine sua resposta com uma pergunta ou uma chamada pra ação — nunca deixe a conversa "morrer" numa resposta neutra sem próximo passo.
 
 LINK DE CURSO (único caso onde você usa uma marcação especial em vez de texto corrido):
