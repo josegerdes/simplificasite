@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ImageOff, Upload } from "lucide-react";
+import { ImageOff, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -13,14 +13,18 @@ interface UploadResponse {
 
 /** Preview + upload de arquivo (com fallback pra colar uma URL direto) — usado em todo
  *  campo de imagem do admin (logo, banner do hero, capa de curso). Upload vai pro
- *  volume persistente `public/uploads` (ver docker-compose.yml). */
+ *  Mongo (não filesystem — ver /api/uploads). `onRemove`, se passado, mostra um botão
+ *  "Remover" que apaga a imagem hospedada do banco e limpa o campo (o site então cai no
+ *  fallback padrão daquele campo, ex: capa de curso genérica). */
 export function ImageUploadField({
   value,
   onChange,
+  onRemove,
   aspectClassName = "aspect-video",
 }: {
   value: string | null;
   onChange: (url: string) => void;
+  onRemove?: () => void;
   aspectClassName?: string;
 }) {
   const [uploading, setUploading] = useState(false);
@@ -55,6 +59,14 @@ export function ImageUploadField({
     }
   }
 
+  function handleRemove() {
+    if (value?.startsWith("/api/uploads/")) {
+      fetch(value, { method: "DELETE" }).catch(() => {});
+    }
+    onRemove?.();
+    toast.success("Imagem removida");
+  }
+
   return (
     <div className="space-y-2">
       <div className={`relative w-full overflow-hidden rounded-md border bg-muted ${aspectClassName}`}>
@@ -73,6 +85,12 @@ export function ImageUploadField({
           <Upload className="h-4 w-4" />
           Enviar
         </Button>
+        {onRemove && value && (
+          <Button type="button" variant="outline" onClick={handleRemove}>
+            <Trash2 className="h-4 w-4 text-destructive" />
+            Remover
+          </Button>
+        )}
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
       </div>
     </div>

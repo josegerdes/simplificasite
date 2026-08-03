@@ -73,6 +73,8 @@ export function toAdminCourse(course: CourseDoc) {
 
 /** Versão para o site — nunca vaza dados internos (status draft não aparece nunca, pois
  *  `findPublishedCourses` já filtra; aqui só formatamos o que a vitrine precisa). */
+const DEFAULT_COVER_IMAGE_URL = "/images/site/course-cover-default.jpg";
+
 export function toVisitorCourse(course: CourseDoc) {
   const seatsRemaining =
     course.seatsLimit !== null ? Math.max(0, course.seatsLimit - course.seatsSold) : null;
@@ -88,7 +90,7 @@ export function toVisitorCourse(course: CourseDoc) {
     longDescription: course.longDescription,
     highlights: course.highlights,
     instructors: course.instructors,
-    coverImageUrl: course.coverImageUrl,
+    coverImageUrl: course.coverImageUrl ?? DEFAULT_COVER_IMAGE_URL,
     workloadHours: course.workloadHours,
     location: course.location,
     startDate: course.startDate,
@@ -107,7 +109,7 @@ export function toPastCourse(course: CourseDoc) {
     slug: course.slug,
     name: course.name,
     modality: course.modality,
-    coverImageUrl: course.coverImageUrl,
+    coverImageUrl: course.coverImageUrl ?? DEFAULT_COVER_IMAGE_URL,
     startDate: course.startDate,
     workloadHours: course.workloadHours,
   };

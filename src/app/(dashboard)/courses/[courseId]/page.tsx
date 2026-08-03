@@ -368,9 +368,15 @@ function CourseDetailsForm({
         <div className="space-y-1.5">
           <Label>Imagem de capa</Label>
           <p className="text-xs text-muted-foreground">
-            Tamanho ideal: 1200×800px (proporção 3:2) — aparece nos cards do site e no topo da página do curso.
+            Tamanho ideal: 1200×800px (proporção 3:2) — aparece nos cards do site e no topo da página do curso. Sem
+            capa própria, o site usa a capa padrão da Simplifica Doctor automaticamente.
           </p>
-          <ImageUploadField value={form.coverImageUrl} onChange={(url) => setForm({ ...form, coverImageUrl: url })} aspectClassName="aspect-[3/2]" />
+          <ImageUploadField
+            value={form.coverImageUrl}
+            onChange={(url) => setForm({ ...form, coverImageUrl: url })}
+            onRemove={() => setForm({ ...form, coverImageUrl: null })}
+            aspectClassName="aspect-[3/2]"
+          />
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
@@ -518,7 +524,10 @@ function EmentaBuilder({ courseId, course }: { courseId: string; course: CourseA
     mutationFn: () => apiFetch<EmentaState>(`/api/courses/${courseId}/ementa/generate`, { method: "POST" }),
     onSuccess: (result) => {
       setModules(result.modules);
-      toast.success("Rascunho gerado — revise antes de publicar");
+      // O backend já salva a ementa gerada na hora (não é só um rascunho local) — só precisa
+      // clicar em "Salvar ementa" de novo se editar manualmente depois disso.
+      queryClient.invalidateQueries({ queryKey: ["ementa", courseId] });
+      toast.success("Ementa gerada e salva! Edite se quiser, ou publique quando estiver pronta.");
     },
     onError: (error: Error) => toast.error(error.message),
   });
