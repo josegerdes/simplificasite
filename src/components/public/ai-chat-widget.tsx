@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bot, ChevronLeft, Loader2, MessageCircle, Send, X } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -103,8 +104,9 @@ export function AiChatWidget({ brandName, personas }: { brandName: string; perso
     const info: LeadInfo = { name, whatsapp, interest: qualifyForm.interest.trim() };
     try {
       // Manda o lead pro CRM externo JÁ — mesmo que a pessoa feche o chat sem mandar
-      // nenhuma mensagem, esse contato já foi capturado.
-      await fetch("/api/public/ai-chat/lead", {
+      // nenhuma mensagem, esse contato já foi capturado. Não bloqueia o chat se falhar
+      // (a conversa continua funcionando), mas avisa — antes falhava 100% em silêncio.
+      const res = await fetch("/api/public/ai-chat/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -113,8 +115,12 @@ export function AiChatWidget({ brandName, personas }: { brandName: string; perso
           leadInfo: { name: info.name, whatsapp: info.whatsapp, interest: info.interest || null },
         }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.message ?? "Não foi possível registrar seu contato — o chat vai continuar normalmente.");
+      }
     } catch {
-      // best-effort — não trava o chat se o envio do lead falhar
+      toast.error("Não foi possível registrar seu contato — o chat vai continuar normalmente.");
     } finally {
       setQualifySubmitting(false);
     }

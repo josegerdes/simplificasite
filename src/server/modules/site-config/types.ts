@@ -15,13 +15,13 @@ const pixelSchema = z.object({
 const personaSchema = z.object({
   id: z.string(),
   name: z.string().min(1).max(100),
-  extraInstructions: z.string().max(4000),
+  extraInstructions: z.string().max(20000),
 });
 
 const aiAgentSchema = z.object({
   enabled: z.boolean(),
   model: z.string().min(1),
-  extraInstructions: z.string(),
+  extraInstructions: z.string().max(20000),
   personas: z.array(personaSchema).max(20),
 });
 

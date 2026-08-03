@@ -109,11 +109,13 @@ export default function AiAgentConfigPage() {
               pagamento&quot;, &quot;use no máximo 1 emoji por mensagem&quot;.
             </div>
             <Textarea
-              rows={6}
+              rows={14}
+              maxLength={20000}
               placeholder="Ex: seja direto, sempre pergunte se a pessoa já é dentista formada, ofereça a matrícula assim que perceber interesse..."
               value={form.extraInstructions}
               onChange={(e) => setForm({ ...form, extraInstructions: e.target.value })}
             />
+            <p className="text-right text-xs text-muted-foreground">{form.extraInstructions.length}/20.000 caracteres</p>
           </div>
 
           <p className="text-xs text-muted-foreground">
@@ -180,7 +182,8 @@ export default function AiAgentConfigPage() {
                 />
                 <Textarea
                   placeholder="Instruções específicas deste vendedor (opcional) — ex: especialista em implantodontia, tom mais técnico..."
-                  rows={2}
+                  rows={8}
+                  maxLength={20000}
                   value={persona.extraInstructions}
                   onChange={(e) => {
                     const personas = [...form.personas];
@@ -188,6 +191,7 @@ export default function AiAgentConfigPage() {
                     setForm({ ...form, personas });
                   }}
                 />
+                <p className="text-right text-xs text-muted-foreground">{persona.extraInstructions.length}/20.000 caracteres</p>
               </div>
               <Button
                 size="icon"
