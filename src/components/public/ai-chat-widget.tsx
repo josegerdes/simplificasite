@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { randomId } from "@/lib/random-id";
+import { getCookie, setCookie } from "@/lib/cookies";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -25,12 +26,13 @@ interface LeadInfo {
   interest: string;
 }
 
+const SESSION_COOKIE = "sdv_chat_session";
+
 function getSessionId(): string {
-  const key = "sdv_chat_session";
-  let id = typeof window !== "undefined" ? window.localStorage.getItem(key) : null;
+  let id = getCookie(SESSION_COOKIE);
   if (!id) {
     id = randomId();
-    window.localStorage.setItem(key, id);
+    setCookie(SESSION_COOKIE, id, 30);
   }
   return id;
 }
@@ -78,6 +80,36 @@ export function AiChatWidget({ brandName, personas }: { brandName: string; perso
 
   // Nunca deixa o widget vazio se a config ficar sem nenhum vendedor cadastrado.
   const roster = personas.length > 0 ? personas : [{ id: "atendimento", name: "Atendimento" }];
+
+  // Retoma a conversa salva (cookie de sessão + histórico no banco) em vez de sempre reabrir
+  // no roster do zero — só carrega em segundo plano, o widget continua fechado até o
+  // visitante clicar; se ele abrir, já vê a conversa de onde parou.
+  useEffect(() => {
+    const sessionId = getSessionId();
+    fetch(`/api/public/ai-chat/history?sessionId=${encodeURIComponent(sessionId)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.found) return;
+        const matchedPersona = roster.find((p) => p.id === data.personaId);
+        const resumedPersona = matchedPersona ?? (data.personaName ? { id: data.personaId, name: data.personaName } : null);
+        if (resumedPersona) setPersona(resumedPersona);
+        if (data.leadName) setLeadInfo({ name: data.leadName, whatsapp: data.leadContact ?? "", interest: "" });
+        if (data.messages?.length > 0) {
+          setMessages(data.messages);
+        } else if (data.leadName && resumedPersona) {
+          // Qualificou mas nunca chegou a mandar mensagem — recria a saudação inicial em vez
+          // de abrir o chat vazio.
+          const firstName = String(data.leadName).split(" ")[0];
+          setMessages([
+            { role: "assistant", content: `Oi, ${firstName}! 👋 Sou o ${resumedPersona.name}, consultor da ${brandName}. Em que posso te ajudar?` },
+          ]);
+        }
+      })
+      .catch(() => {
+        // sem conversa salva ou banco indisponível — só mantém o roster normal, sem quebrar nada
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });

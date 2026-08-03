@@ -100,6 +100,21 @@ async function persistConversation(
   );
 }
 
+/** Devolve a conversa salva (se existir) pra retomar de onde parou quando o visitante volta
+ *  com o mesmo sessionId (cookie) — sem isso, recarregar a página sempre reseta o chat pro
+ *  começo mesmo com o histórico já salvo no banco. */
+export async function getConversationForResume(db: Db, sessionId: string) {
+  const conversation = await collections.aiConversations(db).findOne({ sessionId });
+  if (!conversation) return null;
+  return {
+    personaId: conversation.personaId,
+    personaName: conversation.personaName,
+    leadName: conversation.leadName,
+    leadContact: conversation.leadContact,
+    messages: conversation.messages.map((m) => ({ role: m.role, content: m.content })),
+  };
+}
+
 /** Marca a conversa como "convertida" quando o visitante clica num link de curso que a IA
  *  mandou no chat — sinal forte de intenção, mostrado pro admin na lista de conversas.
  *  Não falha se a conversa ainda não existir (ex: clique muito rápido antes do primeiro
