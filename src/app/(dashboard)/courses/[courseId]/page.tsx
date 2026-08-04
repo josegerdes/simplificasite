@@ -525,7 +525,7 @@ function EmentaBuilder({ courseId, course }: { courseId: string; course: CourseA
     mutationFn: () =>
       apiFetch<EmentaState>(`/api/courses/${courseId}/ementa/generate`, {
         method: "POST",
-        body: JSON.stringify({ sourceText: sourceText.trim() || null }),
+        body: JSON.stringify({ sourceText: sourceText.trim() || null, currentModules: modules }),
       }),
     onSuccess: (result) => {
       // Só preenche o rascunho local — nada é salvo no banco até clicar em "Salvar ementa".
@@ -620,6 +620,27 @@ function EmentaBuilder({ courseId, course }: { courseId: string; course: CourseA
               value={sourceText}
               onChange={(e) => setSourceText(e.target.value)}
             />
+            <p className="rounded border border-dashed px-2.5 py-2 text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">A IA vai receber agora: </span>
+              nome, modalidade, carga horária e descrição curta do curso
+              {modules.length > 0 && (
+                <>
+                  {" "}
+                  + {modules.length === 1 ? "o" : "os"}{" "}
+                  <span className="font-medium text-foreground">
+                    {modules.length} módulo{modules.length === 1 ? "" : "s"} que {modules.length === 1 ? "está" : "estão"} na tela
+                  </span>{" "}
+                  agora (pra melhorar em vez de descartar)
+                </>
+              )}
+              {sourceText.trim() && (
+                <>
+                  {" "}
+                  + o <span className="font-medium text-foreground">texto colado acima</span> ({sourceText.trim().length} caracteres)
+                </>
+              )}
+              .
+            </p>
             <div className="flex justify-end">
               <Button type="button" variant="outline" onClick={() => generate.mutate()} loading={generate.isPending}>
                 <Sparkles className="h-4 w-4" />

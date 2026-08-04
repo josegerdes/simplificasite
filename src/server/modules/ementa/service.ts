@@ -79,11 +79,19 @@ export async function saveEmenta(db: Db, courseId: string, modules: EmentaModule
  * a ementa atual (se já existir), a IA melhora em vez de descartar; sem ementa atual, cria
  * do zero a partir do texto.
  */
-export async function generateEmenta(db: Db, courseId: string, sourceText?: string) {
+export async function generateEmenta(
+  db: Db,
+  courseId: string,
+  sourceText?: string,
+  currentModulesFromClient?: EmentaModule[]
+) {
   const course = await coursesRepo.findCourseById(db, courseId);
   if (!course) throw new ApiError(404, "Curso não encontrado");
 
-  const existing = await ementaRepo.findEmentaByCourseId(db, course._id);
+  // Prioriza o que está na tela agora (pode ter edição manual ainda não salva) — só busca no
+  // banco se o client não mandou nada (ex: chamada feita sem essa info).
+  const currentModules =
+    currentModulesFromClient ?? (await ementaRepo.findEmentaByCourseId(db, course._id))?.modules;
 
   const modules = await generateEmentaDraft({
     courseName: course.name,
@@ -91,7 +99,7 @@ export async function generateEmenta(db: Db, courseId: string, sourceText?: stri
     workloadHours: course.workloadHours,
     modality: course.modality,
     sourceText,
-    currentModules: existing?.modules,
+    currentModules,
   });
 
   return toPublicEmenta(modules, true);

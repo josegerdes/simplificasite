@@ -10,7 +10,7 @@ export const POST = withApiHandler<{ params: { courseId: string } }>(
     const body = await request.json().catch(() => ({}));
     const input = generateEmentaSchema.parse(body);
     const db = await connectDB();
-    const ementa = await ementaService.generateEmenta(db, params.courseId, input.sourceText ?? undefined);
+    const ementa = await ementaService.generateEmenta(db, params.courseId, input.sourceText ?? undefined, input.currentModules);
     return NextResponse.json(ementa);
   },
   { permission: "ementa.manage" }
