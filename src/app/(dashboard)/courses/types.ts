@@ -42,5 +42,6 @@ export interface EmentaModule {
 
 export interface EmentaState {
   modules: EmentaModule[];
+  materials: string[];
   generatedByAi: boolean;
 }

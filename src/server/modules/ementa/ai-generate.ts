@@ -34,6 +34,14 @@ export interface GenerateEmentaInput {
   /** Módulos já existentes — se vierem junto com `sourceText`, a IA MELHORA a ementa atual
    *  usando o texto como base, em vez de descartar o que já tinha. */
   currentModules?: EmentaModule[];
+  /** Lista de material opcional já existente (um item por linha) — mesma lógica de
+   *  "melhorar em vez de descartar" dos módulos. */
+  currentMaterials?: string[];
+}
+
+export interface GenerateEmentaResult {
+  modules: EmentaModule[];
+  materials: string[];
 }
 
 /**
@@ -41,10 +49,11 @@ export interface GenerateEmentaInput {
  * tópicos) com a OpenAI — o admin sempre revisa/edita e precisa clicar em "Salvar ementa"
  * antes de qualquer coisa ir pro banco; esta função NUNCA salva nada sozinha.
  */
-export async function generateEmentaDraft(input: GenerateEmentaInput): Promise<EmentaModule[]> {
+export async function generateEmentaDraft(input: GenerateEmentaInput): Promise<GenerateEmentaResult> {
   const client = getClient();
 
   const hasCurrent = (input.currentModules?.length ?? 0) > 0;
+  const hasCurrentMaterials = (input.currentMaterials?.length ?? 0) > 0;
   const hasSourceText = Boolean(input.sourceText?.trim());
 
   let instruction: string;
@@ -82,6 +91,9 @@ export async function generateEmentaDraft(input: GenerateEmentaInput): Promise<E
       `Ementa atual:\n${input.currentModules!.map((m) => `- ${m.title}: ${m.topics.join("; ")}`).join("\n")}`
     );
   }
+  if (hasCurrentMaterials) {
+    userParts.push(`Lista de material atual:\n${input.currentMaterials!.map((item) => `- ${item}`).join("\n")}`);
+  }
   if (hasSourceText) {
     userParts.push(`Texto de referência fornecido pelo admin:\n${input.sourceText!.trim()}`);
   }
@@ -94,17 +106,23 @@ export async function generateEmentaDraft(input: GenerateEmentaInput): Promise<E
         role: "system",
         content:
           "Você é especialista em criar ementas de cursos de pós-graduação/especialização em odontologia " +
-          `para a escola Simplifica Doctor, em português do Brasil. ${instruction} Nunca use markdown (sem ` +
-          '**negrito**, listas com "-"/"*" ou # títulos) nos títulos/tópicos — só texto puro. Responda SOMENTE ' +
-          'com um JSON no formato {"modules": [{"title": string, "topics": string[]}]} — entre 4 e 8 módulos, ' +
-          "cada um com 3 a 6 tópicos.",
+          `para a escola Simplifica Doctor, em português do Brasil. ${instruction} Além dos módulos, sugira ` +
+          "também uma LISTA DE MATERIAL — os itens (kits, instrumentais, equipamentos, EPIs) que o aluno " +
+          "precisa ter ou levar para acompanhar o curso na prática. Só inclua a lista de material se fizer " +
+          "sentido pra esse curso (cursos totalmente teóricos/online podem não precisar de nenhum item — nesse " +
+          "caso devolva um array vazio); se já existir uma lista de material atual ou um texto de referência " +
+          "que mencione materiais, melhore/complete a partir disso em vez de inventar do zero. Nunca use " +
+          'markdown (sem **negrito**, listas com "-"/"*" ou # títulos) em nenhum campo — só texto puro. ' +
+          'Responda SOMENTE com um JSON no formato {"modules": [{"title": string, "topics": string[]}], ' +
+          '"materials": string[]} — entre 4 e 8 módulos, cada um com 3 a 6 tópicos; "materials" é uma lista ' +
+          "simples de strings, um item por linha, sem numeração.",
       },
       { role: "user", content: userParts.join("\n") },
     ],
   });
 
   const raw = response.choices[0]?.message?.content ?? "{}";
-  let parsed: { modules?: EmentaModule[] };
+  let parsed: { modules?: EmentaModule[]; materials?: string[] };
   try {
     parsed = JSON.parse(raw);
   } catch {
@@ -115,8 +133,11 @@ export async function generateEmentaDraft(input: GenerateEmentaInput): Promise<E
   if (!modules.length) {
     throw new ApiError(502, "A IA não retornou módulos — tente novamente");
   }
-  return modules.map((module) => ({
-    title: stripMarkdown(String(module.title ?? "")),
-    topics: (module.topics ?? []).map((topic) => stripMarkdown(String(topic))).filter(Boolean),
-  }));
+  return {
+    modules: modules.map((module) => ({
+      title: stripMarkdown(String(module.title ?? "")),
+      topics: (module.topics ?? []).map((topic) => stripMarkdown(String(topic))).filter(Boolean),
+    })),
+    materials: (parsed.materials ?? []).map((item) => stripMarkdown(String(item))).filter(Boolean),
+  };
 }

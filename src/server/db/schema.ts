@@ -94,6 +94,9 @@ export interface EmentaDoc {
   _id: ObjectId;
   courseId: ObjectId;
   modules: EmentaModule[];
+  /** Lista de material opcional (kits, equipamentos, itens que o aluno precisa levar/ter) —
+   *  aparece no PDF e na página do curso só quando preenchida, um item por linha. */
+  materials: string[];
   /** Rascunho gerado por IA ainda não revisado/publicado pelo admin. */
   generatedByAi: boolean;
   updatedAt: Date;

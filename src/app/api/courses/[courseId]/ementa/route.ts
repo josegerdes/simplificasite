@@ -19,7 +19,7 @@ export const PUT = withApiHandler<{ params: { courseId: string } }>(
     const body = await request.json();
     const input = updateEmentaSchema.parse(body);
     const db = await connectDB();
-    const ementa = await ementaService.saveEmenta(db, params.courseId, input.modules);
+    const ementa = await ementaService.saveEmenta(db, params.courseId, input.modules, input.materials);
     return NextResponse.json(ementa);
   },
   { permission: "ementa.manage" }

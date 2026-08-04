@@ -516,20 +516,27 @@ function EmentaBuilder({ courseId, course }: { courseId: string; course: CourseA
     queryFn: () => apiFetch(`/api/courses/${courseId}/ementa`),
   });
   const [modules, setModules] = useState<EmentaState["modules"]>([]);
+  const [materialsText, setMaterialsText] = useState("");
   const [sourceText, setSourceText] = useState("");
   useEffect(() => {
-    if (ementa) setModules(ementa.modules);
+    if (ementa) {
+      setModules(ementa.modules);
+      setMaterialsText(ementa.materials.join("\n"));
+    }
   }, [ementa]);
+
+  const materials = materialsText.split("\n").filter((line) => line.trim());
 
   const generate = useMutation({
     mutationFn: () =>
       apiFetch<EmentaState>(`/api/courses/${courseId}/ementa/generate`, {
         method: "POST",
-        body: JSON.stringify({ sourceText: sourceText.trim() || null, currentModules: modules }),
+        body: JSON.stringify({ sourceText: sourceText.trim() || null, currentModules: modules, currentMaterials: materials }),
       }),
     onSuccess: (result) => {
       // Só preenche o rascunho local — nada é salvo no banco até clicar em "Salvar ementa".
       setModules(result.modules);
+      setMaterialsText(result.materials.join("\n"));
       toast.success("Rascunho gerado — revise e clique em \"Salvar ementa\" para confirmar.");
     },
     onError: (error: Error) => toast.error(error.message),
@@ -537,7 +544,10 @@ function EmentaBuilder({ courseId, course }: { courseId: string; course: CourseA
 
   const save = useMutation({
     mutationFn: () =>
-      apiFetch<EmentaState>(`/api/courses/${courseId}/ementa`, { method: "PUT", body: JSON.stringify({ modules }) }),
+      apiFetch<EmentaState>(`/api/courses/${courseId}/ementa`, {
+        method: "PUT",
+        body: JSON.stringify({ modules, materials }),
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ementa", courseId] });
       toast.success("Ementa salva");
@@ -639,6 +649,13 @@ function EmentaBuilder({ courseId, course }: { courseId: string; course: CourseA
                   agora (pra melhorar em vez de descartar)
                 </>
               )}
+              {materials.length > 0 && (
+                <>
+                  {" "}
+                  + a <span className="font-medium text-foreground">lista de material que está na tela</span> ({materials.length}{" "}
+                  item{materials.length === 1 ? "" : "s"})
+                </>
+              )}
               {sourceText.trim() && (
                 <>
                   {" "}
@@ -687,6 +704,22 @@ function EmentaBuilder({ courseId, course }: { courseId: string; course: CourseA
                 Nenhum módulo ainda — use &quot;Gerar com IA&quot; para começar rápido, ou adicione manualmente.
               </p>
             )}
+          </div>
+
+          <Separator />
+
+          <div className="space-y-2 rounded-md border p-3">
+            <Label className="text-sm">Lista de material (opcional)</Label>
+            <p className="text-xs text-muted-foreground">
+              Itens que o aluno precisa ter ou levar (kits, instrumentais, equipamentos). Um item por linha. Só
+              aparece no PDF da ementa quando preenchida — deixe em branco pra não mostrar essa seção.
+            </p>
+            <Textarea
+              rows={4}
+              placeholder="Um item por linha, ex: Kit de instrumentais para resina composta"
+              value={materialsText}
+              onChange={(e) => setMaterialsText(e.target.value)}
+            />
           </div>
         </CardContent>
       </Card>

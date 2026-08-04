@@ -344,6 +344,7 @@ export async function seedSiteContent(db: Db): Promise<void> {
     _id: new ObjectId(),
     courseId: doc._id,
     modules: SEED_COURSES[index]!.ementaModules,
+    materials: [],
     generatedByAi: false,
     updatedAt: now,
   }));
@@ -378,6 +379,7 @@ export async function backfillCourseEmentas(db: Db): Promise<void> {
           _id: new ObjectId(),
           courseId: course._id,
           modules: seedMatch.ementaModules,
+          materials: [],
           generatedByAi: false,
           updatedAt: now,
         });

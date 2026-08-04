@@ -30,7 +30,7 @@ export async function ensureEmentaExists(db: Db, course: CourseDoc): Promise<voi
 
   if (process.env.OPENAI_API_KEY) {
     try {
-      const modules = await generateEmentaDraft({
+      const { modules, materials } = await generateEmentaDraft({
         courseName: course.name,
         shortDescription: course.shortDescription,
         longDescription: course.longDescription,
@@ -39,7 +39,7 @@ export async function ensureEmentaExists(db: Db, course: CourseDoc): Promise<voi
         workloadHours: course.workloadHours,
         modality: course.modality,
       });
-      await ementaRepo.upsertEmenta(db, course._id, modules, true);
+      await ementaRepo.upsertEmenta(db, course._id, modules, true, materials);
       return;
     } catch (error) {
       console.error("[ementa] geração por IA falhou no auto-criar, usando rascunho padrão:", error);
@@ -49,13 +49,13 @@ export async function ensureEmentaExists(db: Db, course: CourseDoc): Promise<voi
   await ementaRepo.upsertEmenta(db, course._id, buildFallbackEmenta(course), false);
 }
 
-export function toPublicEmenta(modules: EmentaModule[], generatedByAi: boolean) {
-  return { modules, generatedByAi };
+export function toPublicEmenta(modules: EmentaModule[], materials: string[], generatedByAi: boolean) {
+  return { modules, materials, generatedByAi };
 }
 
 export async function getEmenta(db: Db, courseId: string) {
   const ementa = await ementaRepo.findEmentaByCourseId(db, ObjectId.createFromHexString(courseId));
-  return toPublicEmenta(ementa?.modules ?? [], ementa?.generatedByAi ?? false);
+  return toPublicEmenta(ementa?.modules ?? [], ementa?.materials ?? [], ementa?.generatedByAi ?? false);
 }
 
 /** Versão pública — só devolve os módulos se o admin marcou a ementa como publicada,
@@ -70,9 +70,9 @@ export async function getPublishedEmentaModules(
   return ementa?.modules ?? [];
 }
 
-export async function saveEmenta(db: Db, courseId: string, modules: EmentaModule[]) {
-  const updated = await ementaRepo.upsertEmenta(db, ObjectId.createFromHexString(courseId), modules, false);
-  return toPublicEmenta(updated?.modules ?? modules, false);
+export async function saveEmenta(db: Db, courseId: string, modules: EmentaModule[], materials: string[] = []) {
+  const updated = await ementaRepo.upsertEmenta(db, ObjectId.createFromHexString(courseId), modules, false, materials);
+  return toPublicEmenta(updated?.modules ?? modules, updated?.materials ?? materials, false);
 }
 
 /**
@@ -86,17 +86,21 @@ export async function generateEmenta(
   db: Db,
   courseId: string,
   sourceText?: string,
-  currentModulesFromClient?: EmentaModule[]
+  currentModulesFromClient?: EmentaModule[],
+  currentMaterialsFromClient?: string[]
 ) {
   const course = await coursesRepo.findCourseById(db, courseId);
   if (!course) throw new ApiError(404, "Curso não encontrado");
 
   // Prioriza o que está na tela agora (pode ter edição manual ainda não salva) — só busca no
   // banco se o client não mandou nada (ex: chamada feita sem essa info).
-  const currentModules =
-    currentModulesFromClient ?? (await ementaRepo.findEmentaByCourseId(db, course._id))?.modules;
+  const existing = currentModulesFromClient
+    ? undefined
+    : await ementaRepo.findEmentaByCourseId(db, course._id);
+  const currentModules = currentModulesFromClient ?? existing?.modules;
+  const currentMaterials = currentMaterialsFromClient ?? existing?.materials;
 
-  const modules = await generateEmentaDraft({
+  const { modules, materials } = await generateEmentaDraft({
     courseName: course.name,
     shortDescription: course.shortDescription,
     longDescription: course.longDescription,
@@ -106,9 +110,10 @@ export async function generateEmenta(
     modality: course.modality,
     sourceText,
     currentModules,
+    currentMaterials,
   });
 
-  return toPublicEmenta(modules, true);
+  return toPublicEmenta(modules, materials, true);
 }
 
 export async function setEmentaPublished(db: Db, courseId: string, published: boolean) {
@@ -131,6 +136,7 @@ export async function getEmentaPdfBuffer(db: Db, slug: string): Promise<{ buffer
     workloadHours: course.workloadHours,
     brandName: config.brandName,
     modules: ementa?.modules ?? [],
+    materials: ementa?.materials ?? [],
   });
 
   return { buffer, fileName: `ementa-${course.slug}.pdf` };

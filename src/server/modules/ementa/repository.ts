@@ -15,13 +15,14 @@ export async function upsertEmenta(
   db: Db,
   courseId: ObjectId,
   modules: EmentaModule[],
-  generatedByAi: boolean
+  generatedByAi: boolean,
+  materials: string[] = []
 ) {
   await collections
     .ementas(db)
     .updateOne(
       { courseId },
-      { $set: { modules, generatedByAi, updatedAt: new Date() }, $setOnInsert: { _id: new ObjectId(), courseId } },
+      { $set: { modules, materials, generatedByAi, updatedAt: new Date() }, $setOnInsert: { _id: new ObjectId(), courseId } },
       { upsert: true }
     );
   return collections.ementas(db).findOne({ courseId });

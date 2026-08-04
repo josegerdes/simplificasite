@@ -8,6 +8,7 @@ export interface EmentaPdfData {
   workloadHours: number;
   brandName: string;
   modules: EmentaModule[];
+  materials: string[];
 }
 
 const TEAL = "#1F8F86";
@@ -29,6 +30,17 @@ const styles = StyleSheet.create({
     borderBottomColor: "#E5E7EB",
   },
   topic: { fontSize: 11, marginBottom: 3, paddingLeft: 12 },
+  materialsBlock: { marginTop: 8, marginBottom: 16 },
+  materialsTitle: {
+    fontSize: 13,
+    fontFamily: "Helvetica-Bold",
+    color: TEAL,
+    marginBottom: 6,
+    paddingBottom: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+  },
+  materialItem: { fontSize: 11, marginBottom: 3, paddingLeft: 12 },
   footer: { position: "absolute", bottom: 32, left: 48, right: 48, fontSize: 9, color: "#9CA3AF", textAlign: "center" },
 });
 
@@ -53,6 +65,16 @@ export function EmentaPdfDocument(data: EmentaPdfData) {
             ))}
           </View>
         ))}
+        {data.materials.length > 0 && (
+          <View style={styles.materialsBlock}>
+            <Text style={styles.materialsTitle}>Lista de Material</Text>
+            {data.materials.map((item, itemIndex) => (
+              <Text key={itemIndex} style={styles.materialItem}>
+                • {item}
+              </Text>
+            ))}
+          </View>
+        )}
         <Text style={styles.footer}>{data.brandName} — documento gerado automaticamente</Text>
       </Page>
     </Document>
