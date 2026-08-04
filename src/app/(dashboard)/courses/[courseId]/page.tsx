@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CheckCircle2, Circle, Download, Plus, Sparkles, Trash2 } from "lucide-react";
+import { CheckCircle2, Circle, Download, Plus, Sparkles, Star, Trash2 } from "lucide-react";
 
 import {
   AlertDialog,
@@ -107,6 +107,15 @@ export default function CourseShowPage({ params }: { params: { courseId: string 
           <p className="text-sm text-muted-foreground">/{course.slug}</p>
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            title={course.featured ? "Remover destaque" : "Marcar como destaque"}
+            onClick={() => updateCourse.mutate({ featured: !course.featured })}
+          >
+            <Star className={course.featured ? "h-4 w-4 fill-brand-gold text-brand-gold" : "h-4 w-4"} />
+          </Button>
           <Select
             value={course.status}
             onValueChange={(value: CourseStatus) => {

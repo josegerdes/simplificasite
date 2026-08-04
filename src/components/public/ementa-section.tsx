@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CheckCircle2, Download, Sparkles } from "lucide-react";
+import { CheckCircle2, Download, Package, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { formatBRL } from "@/lib/format";
@@ -16,14 +16,16 @@ export interface EmentaModuleData {
  */
 export function EmentaSection({
   modules,
+  materials,
   courseSlug,
   price,
 }: {
   modules: EmentaModuleData[];
+  materials: string[];
   courseSlug: string;
   price: number;
 }) {
-  if (modules.length === 0) return null;
+  if (modules.length === 0 && materials.length === 0) return null;
 
   const midpoint = Math.ceil(modules.length / 2);
   const firstHalf = modules.slice(0, midpoint);
@@ -63,7 +65,33 @@ export function EmentaSection({
         </>
       )}
 
+      {materials.length > 0 && <MaterialsCard materials={materials} />}
+
       <FinalCta price={price} />
+    </div>
+  );
+}
+
+function MaterialsCard({ materials }: { materials: string[] }) {
+  return (
+    <div className="mt-6 rounded-xl border border-brand-gold/30 bg-brand-gold/[0.06] p-5">
+      <div className="mb-3 flex items-center gap-3">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-gold/20 text-brand-gold">
+          <Package className="h-4 w-4" />
+        </span>
+        <div>
+          <h3 className="font-heading font-semibold text-white">Lista de Material</h3>
+          <p className="text-xs text-white/50">O que você precisa ter/levar para acompanhar o curso na prática</p>
+        </div>
+      </div>
+      <ul className="grid grid-cols-1 gap-1.5 pl-11 sm:grid-cols-2">
+        {materials.map((item) => (
+          <li key={item} className="flex items-start gap-2 text-sm text-white/70">
+            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-gold" />
+            {item}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

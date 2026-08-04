@@ -326,6 +326,7 @@ export async function seedSiteContent(db: Db): Promise<void> {
     // A ementa nunca é opcional — todo curso já nasce com uma (ver ementaDocs abaixo) — só o
     // checklist "revisar" fica pendente pra lembrar o admin de conferir antes de divulgar.
     ementaPublished: true,
+    featured: false,
     checklist: [
       { id: randomUUID(), label: "Pegar ementa/conteúdo detalhado com o professor", done: true, isDefault: true },
       { id: randomUUID(), label: "Confirmar carga horária, datas e turma", done: true, isDefault: true },

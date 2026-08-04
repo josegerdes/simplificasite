@@ -19,7 +19,8 @@ export function findPublishedCourses(db: Db, modality?: CourseModality) {
   return collections
     .courses(db)
     .find({ status: { $in: ["PUBLISHED", "SOLD_OUT"] }, ...(modality ? { modality } : {}) })
-    .sort({ createdAt: -1 })
+    // Destaques primeiro (pro carrossel da home), depois os mais recentes.
+    .sort({ featured: -1, createdAt: -1 })
     .toArray();
 }
 

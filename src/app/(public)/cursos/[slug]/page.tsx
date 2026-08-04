@@ -50,8 +50,8 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
   }
-  const [ementaModules, siteConfig] = await Promise.all([
-    ementaService.getPublishedEmentaModules(db, course.id, course.ementaPublished),
+  const [ementaContent, siteConfig] = await Promise.all([
+    ementaService.getPublishedEmentaContent(db, course.id, course.ementaPublished),
     siteConfigService.getPublicSiteConfig(db),
   ]);
 
@@ -115,7 +115,12 @@ export default async function CourseDetailPage({ params }: { params: { slug: str
             </div>
           )}
 
-          <EmentaSection modules={ementaModules} courseSlug={course.slug} price={course.price} />
+          <EmentaSection
+            modules={ementaContent.modules}
+            materials={ementaContent.materials}
+            courseSlug={course.slug}
+            price={course.price}
+          />
 
           <InstitutionalSection brandName={siteConfig.brandName} pillars={siteConfig.pillars} locations={siteConfig.locations} />
         </div>

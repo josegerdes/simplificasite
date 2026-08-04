@@ -67,6 +67,7 @@ export function toAdminCourse(course: CourseDoc) {
     checklist: course.checklist,
     pixelOverride: course.pixelOverride,
     ementaPublished: course.ementaPublished,
+    featured: course.featured ?? false,
     createdAt: course.createdAt,
   };
 }
@@ -100,6 +101,7 @@ export function toVisitorCourse(course: CourseDoc) {
     seatsRemaining,
     soldOut,
     ementaPublished: course.ementaPublished,
+    featured: course.featured ?? false,
   };
 }
 
@@ -168,6 +170,7 @@ export async function createCourse(db: Db, input: CreateCourseInput) {
     seatsSold: 0,
     pixelOverride: { enabled: false, pixelId: null },
     ementaPublished: true,
+    featured: false,
     checklist: createDefaultChecklist(),
     createdAt: now,
     updatedAt: now,

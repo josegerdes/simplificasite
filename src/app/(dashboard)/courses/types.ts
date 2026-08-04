@@ -24,6 +24,7 @@ export interface CourseAdmin {
   seatsSold: number;
   pixelOverride: { enabled: boolean; pixelId: string | null };
   ementaPublished: boolean;
+  featured: boolean;
   checklist: ChecklistItem[];
   createdAt: string;
 }

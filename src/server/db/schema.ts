@@ -69,6 +69,8 @@ export interface CourseDoc {
   seatsSold: number;
   pixelOverride: CoursePixelOverride;
   ementaPublished: boolean;
+  /** Curso em destaque — vai pro início do carrossel da home com um selo dourado. */
+  featured: boolean;
   /** Checklist de preparação (pegar conteúdo com o professor, criar artes, etc) — guia o admin
    *  antes de publicar; não bloqueia a publicação, só mostra o que falta. */
   checklist: CourseChecklistItem[];

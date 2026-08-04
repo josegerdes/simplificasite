@@ -23,6 +23,7 @@ const config = {
           tealDark: "hsl(var(--brand-teal-dark))",
           coral: "hsl(var(--brand-coral))",
           ink: "hsl(var(--brand-ink))",
+          gold: "hsl(var(--brand-gold))",
         },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

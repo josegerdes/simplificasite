@@ -58,16 +58,16 @@ export async function getEmenta(db: Db, courseId: string) {
   return toPublicEmenta(ementa?.modules ?? [], ementa?.materials ?? [], ementa?.generatedByAi ?? false);
 }
 
-/** Versão pública — só devolve os módulos se o admin marcou a ementa como publicada,
- *  pra a página do curso poder renderizar a seção visual (não só o link do PDF). */
-export async function getPublishedEmentaModules(
+/** Versão pública — só devolve conteúdo se o admin marcou a ementa como publicada, pra a
+ *  página do curso poder renderizar a seção visual (não só o link do PDF). */
+export async function getPublishedEmentaContent(
   db: Db,
   courseId: string,
   ementaPublished: boolean
-): Promise<EmentaModule[]> {
-  if (!ementaPublished) return [];
+): Promise<{ modules: EmentaModule[]; materials: string[] }> {
+  if (!ementaPublished) return { modules: [], materials: [] };
   const ementa = await ementaRepo.findEmentaByCourseId(db, ObjectId.createFromHexString(courseId));
-  return ementa?.modules ?? [];
+  return { modules: ementa?.modules ?? [], materials: ementa?.materials ?? [] };
 }
 
 export async function saveEmenta(db: Db, courseId: string, modules: EmentaModule[], materials: string[] = []) {

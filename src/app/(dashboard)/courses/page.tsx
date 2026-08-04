@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
-import { BookOpen, Plus } from "lucide-react";
+import { BookOpen, Plus, Star } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,13 @@ export default function CoursesPage() {
       form.reset();
       router.push(`/courses/${course.id}`);
     },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const toggleFeatured = useMutation({
+    mutationFn: ({ id, featured }: { id: string; featured: boolean }) =>
+      apiFetch<CourseAdmin>(`/api/courses/${id}`, { method: "PATCH", body: JSON.stringify({ featured }) }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["courses"] }),
     onError: (error: Error) => toast.error(error.message),
   });
 
@@ -178,6 +185,7 @@ export default function CoursesPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10" />
               <TableHead>Curso</TableHead>
               <TableHead>Modalidade</TableHead>
               <TableHead>Status</TableHead>
@@ -189,14 +197,14 @@ export default function CoursesPage() {
             {isLoading &&
               Array.from({ length: 3 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell colSpan={5}>
+                  <TableCell colSpan={6}>
                     <Skeleton className="h-6 w-full" />
                   </TableCell>
                 </TableRow>
               ))}
             {!isLoading && courses?.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
                   <BookOpen className="mx-auto mb-2 h-8 w-8 opacity-50" />
                   Nenhum curso cadastrado ainda
                 </TableCell>
@@ -204,6 +212,23 @@ export default function CoursesPage() {
             )}
             {courses?.map((course) => (
               <TableRow key={course.id} className="cursor-pointer" onClick={() => router.push(`/courses/${course.id}`)}>
+                <TableCell>
+                  <button
+                    type="button"
+                    title={course.featured ? "Remover destaque" : "Marcar como destaque"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFeatured.mutate({ id: course.id, featured: !course.featured });
+                    }}
+                    className="rounded p-1 hover:bg-muted"
+                  >
+                    <Star
+                      className={
+                        course.featured ? "h-4 w-4 fill-brand-gold text-brand-gold" : "h-4 w-4 text-muted-foreground"
+                      }
+                    />
+                  </button>
+                </TableCell>
                 <TableCell className="font-medium">{course.name}</TableCell>
                 <TableCell>{course.modality === "PRESENCIAL" ? "Presencial" : "Online"}</TableCell>
                 <TableCell>

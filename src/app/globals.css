@@ -61,6 +61,8 @@
     --brand-teal-dark: 178 62% 28%;
     --brand-coral: 14 90% 60%;
     --brand-ink: 200 28% 14%;
+    /* Dourado dos cursos em destaque — sublinhado/estrela, combina com o teal/coral da marca */
+    --brand-gold: 45 93% 58%;
   }
 
   .dark {
