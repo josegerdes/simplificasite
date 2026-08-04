@@ -14,3 +14,8 @@ export const publishEmentaSchema = z.object({
   published: z.boolean(),
 });
 export type PublishEmentaInput = z.infer<typeof publishEmentaSchema>;
+
+export const generateEmentaSchema = z.object({
+  sourceText: z.string().max(20000).nullable().optional(),
+});
+export type GenerateEmentaInput = z.infer<typeof generateEmentaSchema>;

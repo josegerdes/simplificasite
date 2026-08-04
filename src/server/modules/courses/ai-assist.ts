@@ -2,6 +2,7 @@ import OpenAI from "openai";
 
 import { ApiError } from "@/server/auth/guards";
 import { CourseModality } from "@/server/db/schema";
+import { stripMarkdown } from "@/server/lib/ai-text";
 
 function getClient(): OpenAI {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -45,7 +46,7 @@ export async function generateCourseField(input: AiAssistInput): Promise<string 
     messages: [
       {
         role: "system",
-        content: `Você ajuda a escola Simplifica Doctor a escrever textos de vendas pra cursos de pós-graduação em odontologia. ${FIELD_PROMPTS[input.field]}`,
+        content: `Você ajuda a escola Simplifica Doctor a escrever textos de vendas pra cursos de pós-graduação em odontologia. Nunca use markdown (sem **negrito**, *itálico*, listas com "-"/"*" ou # títulos) — só texto puro, é pra ir direto num campo de formulário. ${FIELD_PROMPTS[input.field]}`,
       },
       { role: "user", content: userContext },
     ],
@@ -56,7 +57,7 @@ export async function generateCourseField(input: AiAssistInput): Promise<string 
   if (input.field === "highlights") {
     try {
       const parsed = JSON.parse(raw) as { highlights?: string[] };
-      const highlights = (parsed.highlights ?? []).map((h) => String(h).trim()).filter(Boolean);
+      const highlights = (parsed.highlights ?? []).map((h) => stripMarkdown(String(h))).filter(Boolean);
       if (!highlights.length) throw new Error("vazio");
       return highlights;
     } catch {
@@ -64,7 +65,7 @@ export async function generateCourseField(input: AiAssistInput): Promise<string 
     }
   }
 
-  const text = raw.trim();
+  const text = stripMarkdown(raw);
   if (!text) throw new ApiError(502, "A IA não retornou texto — tente novamente");
   return text;
 }

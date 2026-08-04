@@ -516,18 +516,21 @@ function EmentaBuilder({ courseId, course }: { courseId: string; course: CourseA
     queryFn: () => apiFetch(`/api/courses/${courseId}/ementa`),
   });
   const [modules, setModules] = useState<EmentaState["modules"]>([]);
+  const [sourceText, setSourceText] = useState("");
   useEffect(() => {
     if (ementa) setModules(ementa.modules);
   }, [ementa]);
 
   const generate = useMutation({
-    mutationFn: () => apiFetch<EmentaState>(`/api/courses/${courseId}/ementa/generate`, { method: "POST" }),
+    mutationFn: () =>
+      apiFetch<EmentaState>(`/api/courses/${courseId}/ementa/generate`, {
+        method: "POST",
+        body: JSON.stringify({ sourceText: sourceText.trim() || null }),
+      }),
     onSuccess: (result) => {
+      // Só preenche o rascunho local — nada é salvo no banco até clicar em "Salvar ementa".
       setModules(result.modules);
-      // O backend já salva a ementa gerada na hora (não é só um rascunho local) — só precisa
-      // clicar em "Salvar ementa" de novo se editar manualmente depois disso.
-      queryClient.invalidateQueries({ queryKey: ["ementa", courseId] });
-      toast.success("Ementa gerada e salva! Edite se quiser, ou publique quando estiver pronta.");
+      toast.success("Rascunho gerado — revise e clique em \"Salvar ementa\" para confirmar.");
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -573,10 +576,6 @@ function EmentaBuilder({ courseId, course }: { courseId: string; course: CourseA
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-base">Construtor de ementa</CardTitle>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => generate.mutate()} loading={generate.isPending}>
-              <Sparkles className="h-4 w-4" />
-              Gerar com IA
-            </Button>
             <Button onClick={() => save.mutate()} loading={save.isPending}>
               Salvar ementa
             </Button>
@@ -603,6 +602,31 @@ function EmentaBuilder({ courseId, course }: { courseId: string; course: CourseA
               Pré-visualizar PDF publicado
             </Link>
           )}
+
+          <Separator />
+
+          <div className="space-y-2 rounded-md border bg-muted/40 p-3">
+            <Label className="text-sm">Gerar ou melhorar com IA</Label>
+            <p className="text-xs text-muted-foreground">
+              Deixe em branco e clique em gerar pra criar uma ementa a partir do nome/descrição do curso. Ou cole
+              aqui um texto de referência (conteúdo passado pelo professor, ementa antiga, anotações) — a IA usa
+              esse texto: se já existir módulo abaixo, ela <span className="font-medium text-foreground">melhora</span> o
+              que já tem; se estiver vazio, ela <span className="font-medium text-foreground">cria do zero</span> a
+              partir do texto. Nada é salvo até você clicar em &quot;Salvar ementa&quot;.
+            </p>
+            <Textarea
+              rows={4}
+              placeholder="Opcional: cole aqui o conteúdo/texto de referência..."
+              value={sourceText}
+              onChange={(e) => setSourceText(e.target.value)}
+            />
+            <div className="flex justify-end">
+              <Button type="button" variant="outline" onClick={() => generate.mutate()} loading={generate.isPending}>
+                <Sparkles className="h-4 w-4" />
+                {modules.length > 0 ? "Gerar/Melhorar com IA" : "Gerar com IA"}
+              </Button>
+            </div>
+          </div>
 
           <Separator />
 

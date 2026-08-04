@@ -72,19 +72,29 @@ export async function saveEmenta(db: Db, courseId: string, modules: EmentaModule
   return toPublicEmenta(updated?.modules ?? modules, false);
 }
 
-export async function generateEmenta(db: Db, courseId: string) {
+/**
+ * Gera (ou melhora) um RASCUNHO de ementa com IA — nunca salva no banco. O admin revisa no
+ * construtor e só persiste de verdade clicando em "Salvar ementa" (chama `saveEmenta`
+ * separadamente). `sourceText` opcional: se vier, é usado como fonte principal — junto com
+ * a ementa atual (se já existir), a IA melhora em vez de descartar; sem ementa atual, cria
+ * do zero a partir do texto.
+ */
+export async function generateEmenta(db: Db, courseId: string, sourceText?: string) {
   const course = await coursesRepo.findCourseById(db, courseId);
   if (!course) throw new ApiError(404, "Curso não encontrado");
+
+  const existing = await ementaRepo.findEmentaByCourseId(db, course._id);
 
   const modules = await generateEmentaDraft({
     courseName: course.name,
     shortDescription: course.shortDescription,
     workloadHours: course.workloadHours,
     modality: course.modality,
+    sourceText,
+    currentModules: existing?.modules,
   });
 
-  const updated = await ementaRepo.upsertEmenta(db, course._id, modules, true);
-  return toPublicEmenta(updated?.modules ?? modules, true);
+  return toPublicEmenta(modules, true);
 }
 
 export async function setEmentaPublished(db: Db, courseId: string, published: boolean) {
