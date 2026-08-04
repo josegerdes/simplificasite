@@ -33,6 +33,9 @@ export async function ensureEmentaExists(db: Db, course: CourseDoc): Promise<voi
       const modules = await generateEmentaDraft({
         courseName: course.name,
         shortDescription: course.shortDescription,
+        longDescription: course.longDescription,
+        highlights: course.highlights,
+        instructors: course.instructors,
         workloadHours: course.workloadHours,
         modality: course.modality,
       });
@@ -96,6 +99,9 @@ export async function generateEmenta(
   const modules = await generateEmentaDraft({
     courseName: course.name,
     shortDescription: course.shortDescription,
+    longDescription: course.longDescription,
+    highlights: course.highlights,
+    instructors: course.instructors,
     workloadHours: course.workloadHours,
     modality: course.modality,
     sourceText,

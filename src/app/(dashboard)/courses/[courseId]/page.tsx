@@ -622,7 +622,13 @@ function EmentaBuilder({ courseId, course }: { courseId: string; course: CourseA
             />
             <p className="rounded border border-dashed px-2.5 py-2 text-xs text-muted-foreground">
               <span className="font-medium text-foreground">A IA vai receber agora: </span>
-              nome, modalidade, carga horária e descrição curta do curso
+              nome, modalidade, carga horária, descrição curta
+              {course.longDescription.trim() && ", descrição completa"}
+              {course.highlights.length > 0 &&
+                `, ${course.highlights.length} destaque${course.highlights.length === 1 ? "" : "s"} configurado${course.highlights.length === 1 ? "" : "s"}`}
+              {course.instructors.length > 0 &&
+                `, ${course.instructors.length} instrutor${course.instructors.length === 1 ? "" : "es"}`}
+              {" do curso"}
               {modules.length > 0 && (
                 <>
                   {" "}

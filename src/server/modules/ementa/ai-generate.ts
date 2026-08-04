@@ -15,6 +15,16 @@ function getClient(): OpenAI {
 export interface GenerateEmentaInput {
   courseName: string;
   shortDescription: string;
+  /** Descrição longa (o texto de vendas completo da página do curso) — dá contexto real do
+   *  que o curso promete, não só a frase curta do card. */
+  longDescription: string;
+  /** Destaques/diferenciais configurados no curso (ex: "prática em pacientes reais",
+   *  "cirurgia guiada") — normalmente correspondem a conteúdo real que devia aparecer como
+   *  módulo/tópico na ementa, não só marketing solto. */
+  highlights: string[];
+  /** Nomes dos professores/instrutores — contexto extra, ajuda a IA a não inventar um
+   *  corpo docente genérico. */
+  instructors: string[];
   workloadHours: number;
   modality: "PRESENCIAL" | "ONLINE";
   /** Texto de referência opcional (ex: conteúdo passado pelo professor, ementa antiga colada
@@ -54,8 +64,19 @@ export async function generateEmentaDraft(input: GenerateEmentaInput): Promise<E
     `Curso: ${input.courseName}`,
     `Modalidade: ${input.modality}`,
     `Carga horária: ${input.workloadHours}h`,
-    `Descrição: ${input.shortDescription}`,
+    `Descrição curta: ${input.shortDescription}`,
   ];
+  if (input.longDescription.trim()) {
+    userParts.push(`Descrição completa (texto de vendas da página do curso): ${input.longDescription.trim()}`);
+  }
+  if (input.highlights.length > 0) {
+    userParts.push(
+      `Destaques/diferenciais configurados no curso (considere refletir isso na ementa quando fizer sentido): ${input.highlights.join(", ")}`
+    );
+  }
+  if (input.instructors.length > 0) {
+    userParts.push(`Professores/instrutores do curso: ${input.instructors.join(", ")}`);
+  }
   if (hasCurrent) {
     userParts.push(
       `Ementa atual:\n${input.currentModules!.map((m) => `- ${m.title}: ${m.topics.join("; ")}`).join("\n")}`
